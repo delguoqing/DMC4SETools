@@ -4,9 +4,11 @@ import shutil
 import sys
 import numpy
 import random
+import math
 import util
 
 fvf_2_fvf_size = {}
+pos_is_4h = set()
 class CSubMeshInfo(object):
 	def read(self, getter):
 		# vertex count
@@ -217,28 +219,29 @@ def dump_obj(submesh_info, vb, indices):
 	
 	vertices = []
 	getter.seek(submesh_info.vb_offset)
+	
 	# parse referrenced vertex buffer
 	for i in xrange(submesh_info.index_max + 1):
 		vertex = getter.block(submesh_info.fvf_size)
-		if submesh_info.fvf == 0x926fd02f:
+		if submesh_info.fvf in (0x926fd02f, 0x49b4f02a, 0x207d6038, 0xa7d7d037, 0xd8297029,
+								0xb86de02b, 0xd1a47039, 0x5e7f202d, 0xa14e003d, 0xafa6302e,
+								0x9399c034, 0x63b6c030):
 			pos = vertex.get("fff")
-		elif submesh_info.fvf == 0x49b4f02a:
-			pos = vertex.get("fff")
-		elif submesh_info.fvf == 0xcb68016:
+		elif submesh_info.fvf in (0xcb68016, 0xdb7da015, 0xa013501f, 0x14d40021,
+								  0xa320c017, 0xbb424025, 0xd84e3027, 0x77d87023,
+								  0xb0983014, 0xa8fab019, 0xcbf6c01b, 0xc31f201d, ):
 			pos = vertex.get("hhhh")
 			pos = (pos[0] / 32767.0, pos[1] / 32767.0, pos[2] / 32767.0, pos[3] / 32767.0)
 		else:
-			return ""
 			assert False, "unsupported vertex format 0x%x" % submesh_info.fvf
-		print pos
 		obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
-	
+
 	# faces
 	assert len(used_indices) % 3 == 0
 	for i in xrange(len(used_indices) / 3):
-		i1 = used_indices[i] + 1
-		i2 = used_indices[i + 1] + 1
-		i3 = used_indices[i + 2] + 1
+		i1 = used_indices[i * 3] + 1
+		i2 = used_indices[i * 3 + 1] + 1
+		i3 = used_indices[i * 3 + 2] + 1
 		obj_lines.append("f %d %d %d" % (i1, i2, i3))
 		
 	res = "\n".join(obj_lines)
@@ -315,15 +318,18 @@ def run_test(root, root2, move_when_error=False):
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
 		if sys.argv[1] == "test":
-			run_test("test_models", "work_models", move_when_error=True)
+			run_test("test_models", "work_models", move_when_error=None)
 		elif sys.argv[1] == "work":
 			run_test("work_models", "test_models", move_when_error=False)
 		elif sys.argv[1] == "random":
 			rand_path = os.path.join("test_models", random.choice(os.listdir("test_models")))
-			print "Random Parsing:", rand_path
+			print "mod_parser.py %s > log.txt" % rand_path
 			parse(rand_path)
 		else:
 			parse(sys.argv[1])
+		print "fucker?"
+		for a in pos_is_4h:
+			print "0x%x" % a
 	else:	
 		parse("st200-m91.MOD")
 		
