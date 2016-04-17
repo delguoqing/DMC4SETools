@@ -1,0 +1,2222 @@
+{
+  "1": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "2": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }
+  ], 
+  "3": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 37
+    }
+  ], 
+  "4": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 37
+    }
+  ], 
+  "5": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "6": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "7": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "8": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "9": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "10": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "11": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "12": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "13": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }
+  ], 
+  "14": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }
+  ], 
+  "15": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "16": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "17": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "18": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "19": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "20": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }
+  ], 
+  "21": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }
+  ], 
+  "22": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }
+  ], 
+  "23": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 24
+    }
+  ], 
+  "24": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 4, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 5, 
+      "Format": 31
+    }
+  ], 
+  "25": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "26": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "27": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "28": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "29": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "30": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "31": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "32": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 34
+    }
+  ], 
+  "33": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "34": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 34
+    }
+  ], 
+  "35": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 28
+    }
+  ], 
+  "36": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 34
+    }
+  ], 
+  "37": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 31
+    }
+  ], 
+  "38": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 34
+    }
+  ], 
+  "39": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 28
+    }
+  ], 
+  "40": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 4, 
+      "Format": 34
+    }
+  ], 
+  "41": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "42": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "43": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "44": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "45": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "46": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "47": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "48": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 28
+    }
+  ], 
+  "49": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 28
+    }
+  ], 
+  "50": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "51": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "52": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "53": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 34
+    }
+  ], 
+  "54": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "55": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "56": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "57": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "58": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "59": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "60": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "61": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "62": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 4, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 5, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 6, 
+      "Format": 31
+    }
+  ], 
+  "63": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 4, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 5, 
+      "Format": 31
+    }
+  ], 
+  "64": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 24
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }
+  ], 
+  "65": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }
+  ], 
+  "66": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }
+  ], 
+  "67": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 14
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 14
+    }
+  ], 
+  "68": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }
+  ], 
+  "69": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 12
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 32
+    }
+  ], 
+  "70": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 14
+    }
+  ], 
+  "71": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 32
+    }
+  ], 
+  "72": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 32
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 32
+    }
+  ], 
+  "73": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }
+  ], 
+  "74": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }
+  ], 
+  "75": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "76": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "77": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "78": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "79": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }
+  ], 
+  "80": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 12
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 37
+    }
+  ], 
+  "81": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }
+  ], 
+  "82": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 38
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 32
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 41
+    }
+  ], 
+  "83": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }
+  ], 
+  "84": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 31
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "85": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "86": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }
+  ], 
+  "87": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "88": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }
+  ], 
+  "89": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 16
+    }
+  ], 
+  "90": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "91": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }
+  ], 
+  "92": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }
+  ], 
+  "93": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "94": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "95": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "96": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "97": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }
+  ], 
+  "98": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "99": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 1, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 2, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 3, 
+      "Format": 34
+    }
+  ], 
+  "100": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }
+  ], 
+  "101": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 6
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "102": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "103": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 41
+    }
+  ], 
+  "104": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "105": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }
+  ], 
+  "106": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "107": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "108": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 2
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 16
+    }
+  ], 
+  "109": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 10
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 34
+    }
+  ], 
+  "110": [
+    {
+      "SematicName": "POSITION", 
+      "SematicIndex": 0, 
+      "Format": 13
+    }, 
+    {
+      "SematicName": "NORMAL", 
+      "SematicIndex": 0, 
+      "Format": 28
+    }, 
+    {
+      "SematicName": "TANGENT", 
+      "SematicIndex": 0, 
+      "Format": 14
+    }, 
+    {
+      "SematicName": "BINORMAL", 
+      "SematicIndex": 0, 
+      "Format": 30
+    }, 
+    {
+      "SematicName": "TEXCOORD", 
+      "SematicIndex": 0, 
+      "Format": 36
+    }
+  ]
+}

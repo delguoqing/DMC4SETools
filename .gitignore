@@ -1,0 +1,4 @@
+*.pyc
+src/log.txt
+*.obj
+*.MOD

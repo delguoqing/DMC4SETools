@@ -1,0 +1,17 @@
+r $t4 = 06f10300
+.while (@$t4 <= 06f132b0)
+{
+	.printf "============ InputLayout =========\n"
+	r $t1 = 0;
+	r $t2 = poi(@$t4 + 14)
+	.printf "Element Count: %d\n", @$t2
+	r $t3 = poi(@$t4 + 10);
+	.while (@$t1 < @$t2) {
+	 	.printf "SematicName %ma\n", poi(@$t3)
+		.printf "SematicIndex %d\n", poi(@$t3 + 4)
+		.printf "Format %d\n", poi(@$t3 + 8)
+		r $t1 = @$t1 + 1
+		r $t3 = @$t3 + 1c
+	}
+	r $t4 = @$t4 + 70
+}	

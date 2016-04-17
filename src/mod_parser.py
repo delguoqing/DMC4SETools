@@ -5,10 +5,15 @@ import sys
 import numpy
 import random
 import math
+import json
 import util
 
-fvf_2_fvf_size = {}
-pos_is_4h = set()
+from d3d10 import dxgi_format_parse
+
+f = open("windbg/input_layouts.json", "r")
+input_layout_descs = json.load(f)
+f.close()
+
 class CSubMeshInfo(object):
 	def read(self, getter):
 		# vertex count
@@ -29,6 +34,7 @@ class CSubMeshInfo(object):
 		# fvf flags: I don't know what is this...
 		getter.seek(0x14)
 		self.fvf = getter.get("I")
+		self.input_layout_index = self.fvf & 0xFFF
 		# index min max
 		getter.seek(0x28)
 		self.index_min = getter.get("H")
@@ -193,10 +199,6 @@ def parse(path):
 	getter.assert_end()
 	
 	for i, submesh_info in enumerate(submesh_info_list):
-		if submesh_info.fvf in fvf_2_fvf_size:
-			assert submesh_info.fvf_size == fvf_2_fvf_size[submesh_info.fvf]
-		else:
-			fvf_2_fvf_size[submesh_info.fvf] = submesh_info.fvf_size
 		print "=============="
 		obj_file_str = dump_obj(submesh_info, vb, indices)
 		f_obj = open("objs/%d.obj" % i, "w")
@@ -220,21 +222,29 @@ def dump_obj(submesh_info, vb, indices):
 	vertices = []
 	getter.seek(submesh_info.vb_offset)
 	
+	input_layout_desc = input_layout_descs[str(submesh_info.input_layout_index)]
+	print "input_layout_index", submesh_info.input_layout_index
+	
 	# parse referrenced vertex buffer
+	has_uv = False
 	for i in xrange(submesh_info.index_max + 1):
-		vertex = getter.block(submesh_info.fvf_size)
-		if submesh_info.fvf in (0x926fd02f, 0x49b4f02a, 0x207d6038, 0xa7d7d037, 0xd8297029,
-								0xb86de02b, 0xd1a47039, 0x5e7f202d, 0xa14e003d, 0xafa6302e,
-								0x9399c034, 0x63b6c030):
-			pos = vertex.get("fff")
-		elif submesh_info.fvf in (0xcb68016, 0xdb7da015, 0xa013501f, 0x14d40021,
-								  0xa320c017, 0xbb424025, 0xd84e3027, 0x77d87023,
-								  0xb0983014, 0xa8fab019, 0xcbf6c01b, 0xc31f201d, ):
-			pos = vertex.get("hhhh")
-			pos = (pos[0] / 32767.0, pos[1] / 32767.0, pos[2] / 32767.0, pos[3] / 32767.0)
-		else:
-			assert False, "unsupported vertex format 0x%x" % submesh_info.fvf
+		vertex = {}
+		for element in input_layout_desc:
+			format_size = dxgi_format_parse.get_format_size(element["Format"])
+			attri_data = getter.get_raw(format_size)
+			attri = dxgi_format_parse.parse_format(attri_data, element["Format"])
+			if element["SematicName"] not in vertex:
+				vertex[element["SematicName"]] = attri
+			else:
+				vertex[element["SematicName"] + str(element["SematicIndex"])] = attri
+			
+		print vertex.keys()
+		pos = vertex["POSITION"]
 		obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
+		if "TEXCOORD" in vertex:
+			has_uv = True
+			uv = vertex["TEXCOORD"]
+			obj_lines.append("vt %f %f" % (uv[0], uv[1]))
 
 	# faces
 	assert len(used_indices) % 3 == 0
@@ -242,7 +252,10 @@ def dump_obj(submesh_info, vb, indices):
 		i1 = used_indices[i * 3] + 1
 		i2 = used_indices[i * 3 + 1] + 1
 		i3 = used_indices[i * 3 + 2] + 1
-		obj_lines.append("f %d %d %d" % (i1, i2, i3))
+		if not has_uv:
+			obj_lines.append("f %d %d %d" % (i1, i2, i3))
+		else:
+			obj_lines.append("f %d/%d %d/%d %d/%d" % (i1, i1, i2, i2, i3, i3))
 		
 	res = "\n".join(obj_lines)
 	return res
@@ -327,15 +340,5 @@ if __name__ == '__main__':
 			parse(rand_path)
 		else:
 			parse(sys.argv[1])
-		print "fucker?"
-		for a in pos_is_4h:
-			print "0x%x" % a
 	else:	
 		parse("st200-m91.MOD")
-		
-	vk = []
-	for k, v in fvf_2_fvf_size.iteritems():
-		vk.append((v, k))
-	vk.sort()
-	for v, k in vk:
-		print "0x%x, 0x%x: 0x%x" % (k & 0xFFF, k >> 12, v)

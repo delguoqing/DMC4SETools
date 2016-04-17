@@ -1,0 +1,1420 @@
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 6
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 38
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 37
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 37
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 16
+SematicName TANGENT
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 16
+SematicName NORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 13
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 13
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+SematicName TANGENT
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+SematicName TANGENT
+SematicIndex 0
+Format 2
+SematicName BINORMAL
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+SematicName TANGENT
+SematicIndex 0
+Format 2
+SematicName BINORMAL
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 10
+SematicName NORMAL
+SematicIndex 0
+Format 10
+SematicName TANGENT
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 24
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 36
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 30
+SematicName TANGENT
+SematicIndex 0
+Format 28
+SematicName BINORMAL
+SematicIndex 0
+Format 24
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 30
+SematicName TANGENT
+SematicIndex 0
+Format 30
+SematicName BINORMAL
+SematicIndex 0
+Format 28
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+SematicName TEXCOORD
+SematicIndex 1
+Format 24
+============ InputLayout =========
+Element Count: 10
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 30
+SematicName TANGENT
+SematicIndex 0
+Format 28
+SematicName BINORMAL
+SematicIndex 0
+Format 24
+SematicName TEXCOORD
+SematicIndex 0
+Format 13
+SematicName TEXCOORD
+SematicIndex 1
+Format 13
+SematicName TEXCOORD
+SematicIndex 2
+Format 13
+SematicName TEXCOORD
+SematicIndex 3
+Format 31
+SematicName TEXCOORD
+SematicIndex 4
+Format 31
+SematicName TEXCOORD
+SematicIndex 5
+Format 31
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 34
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 34
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 28
+============ InputLayout =========
+Element Count: 7
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 34
+============ InputLayout =========
+Element Count: 7
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 28
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 31
+============ InputLayout =========
+Element Count: 8
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 28
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 31
+SematicName TEXCOORD
+SematicIndex 3
+Format 34
+============ InputLayout =========
+Element Count: 8
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 28
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 31
+SematicName TEXCOORD
+SematicIndex 3
+Format 28
+============ InputLayout =========
+Element Count: 9
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 28
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 31
+SematicName TEXCOORD
+SematicIndex 3
+Format 10
+SematicName TEXCOORD
+SematicIndex 4
+Format 34
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 34
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 34
+SematicName TEXCOORD
+SematicIndex 1
+Format 28
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 34
+SematicName TEXCOORD
+SematicIndex 1
+Format 28
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 28
+SematicName TEXCOORD
+SematicIndex 1
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 34
+SematicName BINORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 10
+SematicName BINORMAL
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 10
+SematicName BINORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 11
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 13
+SematicName TEXCOORD
+SematicIndex 2
+Format 13
+SematicName TEXCOORD
+SematicIndex 3
+Format 13
+SematicName TEXCOORD
+SematicIndex 4
+Format 31
+SematicName TEXCOORD
+SematicIndex 5
+Format 31
+SematicName TEXCOORD
+SematicIndex 6
+Format 31
+============ InputLayout =========
+Element Count: 10
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 31
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 10
+SematicName TEXCOORD
+SematicIndex 3
+Format 31
+SematicName TEXCOORD
+SematicIndex 4
+Format 31
+SematicName TEXCOORD
+SematicIndex 5
+Format 31
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 24
+SematicName TANGENT
+SematicIndex 0
+Format 13
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 41
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 6
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 14
+SematicName TANGENT
+SematicIndex 0
+Format 41
+SematicName BINORMAL
+SematicIndex 0
+Format 14
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 6
+SematicName TANGENT
+SematicIndex 0
+Format 38
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 38
+SematicName BINORMAL
+SematicIndex 0
+Format 12
+SematicName TEXCOORD
+SematicIndex 0
+Format 32
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 38
+SematicName BINORMAL
+SematicIndex 0
+Format 36
+SematicName TEXCOORD
+SematicIndex 0
+Format 14
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 38
+SematicName BINORMAL
+SematicIndex 0
+Format 36
+SematicName TEXCOORD
+SematicIndex 0
+Format 38
+SematicName TEXCOORD
+SematicIndex 1
+Format 32
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 38
+SematicName BINORMAL
+SematicIndex 0
+Format 36
+SematicName TEXCOORD
+SematicIndex 0
+Format 32
+SematicName TEXCOORD
+SematicIndex 1
+Format 32
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 41
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 41
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 6
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 12
+SematicName BINORMAL
+SematicIndex 0
+Format 37
+============ InputLayout =========
+Element Count: 4
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 6
+SematicName BINORMAL
+SematicIndex 0
+Format 36
+============ InputLayout =========
+Element Count: 6
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 36
+SematicName BINORMAL
+SematicIndex 0
+Format 38
+SematicName TEXCOORD
+SematicIndex 0
+Format 32
+SematicName TEXCOORD
+SematicIndex 1
+Format 41
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 6
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 28
+SematicName NORMAL
+SematicIndex 0
+Format 31
+SematicName TANGENT
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 28
+SematicName NORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 28
+SematicName NORMAL
+SematicIndex 0
+Format 28
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 41
+============ InputLayout =========
+Element Count: 7
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+SematicName TANGENT
+SematicIndex 0
+Format 2
+SematicName BINORMAL
+SematicIndex 0
+Format 2
+SematicName TEXCOORD
+SematicIndex 0
+Format 2
+SematicName TEXCOORD
+SematicIndex 1
+Format 2
+SematicName TEXCOORD
+SematicIndex 2
+Format 16
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 6
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 41
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+SematicName TANGENT
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 10
+SematicName NORMAL
+SematicIndex 0
+Format 10
+SematicName TANGENT
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 10
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 8
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+SematicName TANGENT
+SematicIndex 0
+Format 41
+SematicName BINORMAL
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 0
+Format 10
+SematicName TEXCOORD
+SematicIndex 1
+Format 10
+SematicName TEXCOORD
+SematicIndex 2
+Format 10
+SematicName TEXCOORD
+SematicIndex 3
+Format 34
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 6
+============ InputLayout =========
+Element Count: 3
+SematicName POSITION
+SematicIndex 0
+Format 6
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 41
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 2
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 1
+SematicName POSITION
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 2
+SematicName NORMAL
+SematicIndex 0
+Format 16
+============ InputLayout =========
+Element Count: 2
+SematicName POSITION
+SematicIndex 0
+Format 10
+SematicName NORMAL
+SematicIndex 0
+Format 34
+============ InputLayout =========
+Element Count: 5
+SematicName POSITION
+SematicIndex 0
+Format 13
+SematicName NORMAL
+SematicIndex 0
+Format 28
+SematicName TANGENT
+SematicIndex 0
+Format 14
+SematicName BINORMAL
+SematicIndex 0
+Format 30
+SematicName TEXCOORD
+SematicIndex 0
+Format 36
