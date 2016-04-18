@@ -105,16 +105,29 @@ def parse(path):
 	n1 = getter.get("I")
 
 	header.seek(0x6)
-	n0 = header.get("H")
-	if n0 != 0:
-		# print "reading something special"
-		# print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + n0 * 0x18)
-		getter.skip(n0 * 0x18)
-		# print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + n0 * 0x40)
-		getter.skip(n0 * 0x40)
-		# print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + n0 * 0x40)
-		getter.skip(n0 * 0x40)
-		# print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + 0x100)
+	bone_count = header.get("H")	# bone count
+	if bone_count > 0:
+		print "reading bone data, bone_count = %d" % bone_count
+		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + bone_count * 0x18)
+		for bone_index in xrange(bone_count):
+			bone_info1 = getter.block(0x18)
+			print map(hex, bone_info1.get("BBBB")), bone_info1.get("5f")
+		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + bone_count * 0x40)
+		# 0x40 is a typical size for a matrix
+		for bone_index in xrange(bone_count):
+			print getter.get("4f")
+			print getter.get("4f")
+			print getter.get("4f")
+			print getter.get("4f")
+			print
+		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + bone_count * 0x40)
+		for bone_index in xrange(bone_count):
+			print getter.get("4f")
+			print getter.get("4f")
+			print getter.get("4f")
+			print getter.get("4f")
+			print
+		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + 0x100)
 		getter.skip(0x100)
 	
 	# kind of bounding box information
