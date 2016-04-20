@@ -42,7 +42,6 @@ def parse_format(data, fmt):
 		return (
 			_parse_float16(data[0:2]),
 			_parse_float16(data[2:4]),
-			0.0, 1.0
 		)
 	elif fmt == DXGI_FORMAT_R8G8B8A8_UNORM:
 		return (
@@ -69,7 +68,6 @@ def parse_format(data, fmt):
 		return (
 			_parse_uint16(data[0:2]),
 			_parse_uint16(data[2:4]),
-			0.0, 1.0
 		)
 	elif fmt == DXGI_FORMAT_R8G8B8A8_UINT:
 		return struct.unpack("4B", data)
