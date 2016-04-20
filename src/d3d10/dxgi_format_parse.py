@@ -1,4 +1,5 @@
 import struct
+import numpy
 from dxgi_format import *
 
 ENDIAN = "<"
@@ -39,8 +40,8 @@ def parse_format(data, fmt):
 		)
 	elif fmt == DXGI_FORMAT_R16G16_FLOAT:
 		return (
-			_parse_float("\x00\x00" + data[0:2]),
-			_parse_float("\x00\x00" + data[2:4]),
+			_parse_float16(data[0:2]),
+			_parse_float16(data[2:4]),
 			0.0, 1.0
 		)
 	elif fmt == DXGI_FORMAT_R8G8B8A8_UNORM:
@@ -59,10 +60,10 @@ def parse_format(data, fmt):
 		)
 	elif fmt == DXGI_FORMAT_R16G16B16A16_FLOAT:
 		return (
-			_parse_float("\x00\x00" + data[0:2]),
-			_parse_float("\x00\x00" + data[2:4]),
-			_parse_float("\x00\x00" + data[4:6]),
-			_parse_float("\x00\x00" + data[6:8]),
+			_parse_float16(data[0:2]),
+			_parse_float16(data[2:4]),
+			_parse_float16(data[4:6]),
+			_parse_float16(data[6:8]),
 		)
 	elif fmt == DXGI_FORMAT_R16G16_UINT:
 		return (
@@ -89,3 +90,6 @@ def _parse_float(data):
 
 def _parse_uint16(data):
 	return struct.unpack(ENDIAN + "H", data)[0]
+
+def _parse_float16(data):
+	return numpy.frombuffer(data, dtype=numpy.dtype(ENDIAN + "f2"))[0]
