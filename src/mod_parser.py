@@ -263,6 +263,8 @@ def dump_obj(submesh_info, vb, indices):
 		obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
 		uv = vertex_trans.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
 		obj_lines.append("vt %f %f" % (uv[0], uv[1]))
+		normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
+		obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
 
 	assert not unsupported_input_layout, "unsupported input layout %d" % submesh_info.input_layout_index
 	
@@ -272,7 +274,7 @@ def dump_obj(submesh_info, vb, indices):
 		i1 = used_indices[i * 3] + 1
 		i2 = used_indices[i * 3 + 1] + 1
 		i3 = used_indices[i * 3 + 2] + 1
-		obj_lines.append("f %d/%d %d/%d %d/%d" % (i1, i1, i2, i2, i3, i3))
+		obj_lines.append("f %d/%d/%d %d/%d/%d %d/%d/%d" % (i1, i1, i1, i2, i2, i2, i3, i3, i3))
 		
 	res = "\n".join(obj_lines)
 	return res
