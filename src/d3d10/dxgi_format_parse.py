@@ -33,9 +33,9 @@ def parse_format(data, fmt):
 	elif fmt == DXGI_FORMAT_R10G10B10A2_UNORM:
 		v = struct.unpack(ENDIAN + "I", data)[0]
 		return (
-			((v >> 0) & 1023) / 65535.0,
-			((v >> 10) & 1023) / 65535.0,
-			((v >> 20) & 1023) / 65535.0,
+			((v >> 0) & 1023) / 1023.0,
+			((v >> 10) & 1023) / 1023.0,
+			((v >> 20) & 1023) / 1023.0,
 			((v >> 30) & 3) / 3.0,
 		)
 	elif fmt == DXGI_FORMAT_R16G16_FLOAT:
