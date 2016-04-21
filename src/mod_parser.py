@@ -15,6 +15,7 @@ f = open("windbg/input_layouts.json", "r")
 input_layout_descs = json.load(f)
 f.close()
 
+
 class CSubMeshInfo(object):
 	def read(self, getter):
 		# vertex count
@@ -318,8 +319,30 @@ def run_test(root, root2, move_when_error=False):
 		if error == move_when_error:
 			rel_path = os.path.relpath(model_path, root)
 			shutil.move(model_path, os.path.join(root2, rel_path))
-		
+
+# verify that sematic names are usually in a fixed order
+# POSITION,NORMAL,TANGENT,BINORMAL,
+# TEXCOORD,TEXCOORD,TEXCOORD,TEXCOORD,TEXCOORD,TEXCOORD,TEXCOORD
+# which can be used to filter a set of valid shaders
+def verify_sematic_order(input_layout_descs):
+	_sig = ""
+	for index, descs in input_layout_descs.iteritems():
+		sematic_names = []
+		for desc in descs:
+			sematic_names.append(desc["SematicName"])
+		sig = ",".join(sematic_names)
+		if sig.startswith(_sig):
+			_sig = sig
+			print "sig =", _sig
+		elif _sig.startswith(sig):
+			continue
+		else:
+			return False
+	return True
+			
 if __name__ == '__main__':
+	# assert verify_sematic_order(input_layout_descs), "sematic name should be in the same order"
+	
 	if len(sys.argv) > 1:
 		if sys.argv[1] == "test":
 			run_test("test_models", "work_models", move_when_error=None)

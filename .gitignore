@@ -2,3 +2,5 @@
 src/log.txt
 *.obj
 *.MOD
+*.dxbc
+src/shader/tmp/*.txt
