@@ -19,7 +19,6 @@ def run(root):
 				bytecodes.extend(get_dxbc(spk_path))
 				print "DXBC Set Size = %d" % (len(bytecodes))
 				
-	vs_
 	for i, dxbc in enumerate(bytecodes):
 		tmp = open("tmp.dxbc", "wb")
 		tmp.write(dxbc)
