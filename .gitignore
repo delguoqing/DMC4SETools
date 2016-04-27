@@ -4,3 +4,5 @@ src/log.txt
 *.MOD
 *.dxbc
 src/shader/tmp/*.txt
+*.ps
+*.vs
