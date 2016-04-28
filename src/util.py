@@ -145,17 +145,15 @@ class getter(object):
 		self.offset += size
 		return data_seg
 		
-	def get(self, fmt, force_tuple=False):
+	def get(self, fmt, offset=None, force_tuple=False):
+		if offset is not None:
+			self.seek(offset)
 		size = struct.calcsize(fmt)
 		data_seg = self.get_raw(size)
 		res = struct.unpack(self.endian + fmt, data_seg)
 		if not force_tuple and len(res) == 1:
 			return res[0]
 		return res
-		
-	def at(self, fmt, offset, force_tuple=False):
-		self.seek(offset)
-		return self.get(fmt, force_tuple=False)
 	
 	def block(self, size, endian=None):
 		data = self.get_raw(size)

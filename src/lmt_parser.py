@@ -120,14 +120,13 @@ class struc_9(object):
 		at = getter.at
 		seek = getter.seek
 		
-		at(0x0, "f")
-		at(0x4, "f")
-		at(0x8, "f")
-		at(0xc, "f")
-		at(0x10, "f")
-		at(0x14, "f")
-		at(0x18, "f")
-		at(0x1c, "f")
+		get("f", offset=0x4)
+		get("f", offset=0x8)
+		get("f", offset=0xc)
+		get("f", offset=0x10)
+		get("f", offset=0x14)
+		get("f", offset=0x18)
+		get("f", offset=0x1c)
 	
 def parse(lmt_path):
 	f = open(lmt_path, "rb")

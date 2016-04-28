@@ -109,134 +109,122 @@ class CBlock0(object):
 		
 		# some kind of position here?
 		getter.get("4f")
+		
+class CModel(object):
+	
+	def __init__(self):
+		self.submesh_names = []
+		self.header = None
+		
+	def read(self, mod):
+		header = mod.block(0x80)
+		
+		FOURCC = header.get("4s", offset=0x0)
+		assert FOURCC == "MOD\x00", "invalid FOURCC %s" % FOURCC
+		field_4 = header.get("H", offset=0x4)
+		assert field_4 == 0xd2, "invalid MOD file!"
+		self.bone_num = header.get("H", offset=0x6)
+		self.batch_num = header.get("H", 0x8)
+		self.submesh_name_num = header.get("H", offset=0xa)		
+		vertex_num = header.get("I", offset=0xc)
+		index_num = header.get("I", offset=0x10)
+		vb_size = header.get("I", offset=0x18)
+		
+		self.n2 = header.get("I", offset=0x20)
+		header.get("I", offset=0x34)
+		header.get("f", offset=0x40)
+		
+		self.n1 = mod.get("I")
+		
+		self.read_bone(mod)
+		self.read_bounding_box(mod)
+		self.read_submesh_names(mod)
+		self.read_batch(mod)
+		self.read_unknown1(mod)
+		self.vb = mod.get_raw(vb_size)
+		self.indices = mod.get("%dH" % index_num)
+		
+		mod.align(0x4)
+		n7 = mod.get("I")
+		mod.assert_end()
+		
+	def read_bone(self, mod):
+		if self.bone_num <= 0:
+			return
+		print "reading bone data, bone_num = %d" % self.bone_num
+		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x18)
+		for bone_index in xrange(self.bone_num):
+			bone_info1 = mod.block(0x18)
+			print map(hex, bone_info1.get("BBBB")), bone_info1.get("5f")
+		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
+		# 0x40 is a typical size for a matrix
+		for bone_index in xrange(self.bone_num):
+			print mod.get("4f")
+			print mod.get("4f")
+			print mod.get("4f")
+			print mod.get("4f")
+			print
+		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
+		for bone_index in xrange(self.bone_num):
+			print mod.get("4f")
+			print mod.get("4f")
+			print mod.get("4f")
+			print mod.get("4f")
+			print
+		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + 0x100)
+		mod.skip(0x100)
+		
+	def read_bounding_box(self, mod):
+		for i in xrange(self.n2):
+			print "\t", mod.get("8f")
+			
+	def read_submesh_names(self, mod):
+		print "n = %d, @offset: 0x%x - 0x%x" % (self.submesh_name_num, mod.offset,
+												mod.offset + self.submesh_name_num * 0x80)
+		for i in xrange(self.submesh_name_num):
+			print "\t", mod.get("128s").rstrip("\x00")
+			
+	def read_batch(self, mod):
+		batch_info_list = []
+		for i in xrange(self.batch_num):
+			block = mod.block(0x30)
+			batch_info = CSubMeshInfo()
+			batch_info.read(block)
+			batch_info_list.append(batch_info)
+			
+		# reindexing
+		mesh_id = 1
+		for i, cur_batch_info in enumerate(batch_info_list):
+			cur_batch_info.mesh_id = mesh_id
+			print "\t", mesh_id, map(hex, cur_batch_info.unknowns)
+			if i + 1 >= len(batch_info_list):
+				break
+			next_batch_info = batch_info_list[i + 1]
+			if cur_batch_info != next_batch_info:
+				mesh_id += 1			
+			
+	def read_unknown1(self, mod):
+		print "n1 = %d, @offset: 0x%x - 0x%x" % (self.n1, mod.offset,
+												 mod.offset + self.n1 * 0x90)
+		# getter.skip(n1 * 0x90)
+		for i in xrange(self.n1):
+			print mod.get("8f")
+			print mod.get("8f")
+			mat = []
+			for i in xrange(4):
+				mat.append(mod.get("4f"))
+				print mat[-1]
+			print "==========="
+			print mod.get("4f")
+			print
+			# print "\t", data
 			
 def parse(path):
 	f = open(path, "rb")
 	getter = util.get_getter(f, "<")
 	
-	# header
-	header = getter.block(0x80)
-	header.seek(0xc)
-	vertex_num, indices_num = header.get("2I")
-	print "vertex_num", hex(vertex_num)
-	header.seek(0x18)
-	vb_size = header.get("I")
-	
-	n1 = getter.get("I")
-
-	header.seek(0x6)
-	bone_count = header.get("H")	# bone count
-	if bone_count > 0:
-		print "reading bone data, bone_count = %d" % bone_count
-		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + bone_count * 0x18)
-		for bone_index in xrange(bone_count):
-			bone_info1 = getter.block(0x18)
-			print map(hex, bone_info1.get("BBBB")), bone_info1.get("5f")
-		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + bone_count * 0x40)
-		# 0x40 is a typical size for a matrix
-		for bone_index in xrange(bone_count):
-			print getter.get("4f")
-			print getter.get("4f")
-			print getter.get("4f")
-			print getter.get("4f")
-			print
-		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + bone_count * 0x40)
-		for bone_index in xrange(bone_count):
-			print getter.get("4f")
-			print getter.get("4f")
-			print getter.get("4f")
-			print getter.get("4f")
-			print
-		print "@offset: 0x%x - 0x%x" % (getter.offset, getter.offset + 0x100)
-		getter.skip(0x100)
-	
-	# kind of bounding box information
-	header.seek(0x20)
-	n2 = header.get("I")
-	print "n = %d, @offset: 0x%x - 0x%x" % (n2, getter.offset, getter.offset + n2 * 0x20)
-	print "bounding box information:", n2
-	for i in xrange(n2):
-		print "\t", getter.get("8f")
-		
-	# submesh names
-	header.seek(0xa)
-	n3 = header.get("H")
-	print "submesh names:", n3
-	# print "n = %d, @offset: 0x%x - 0x%x" % (n3, getter.offset, getter.offset + n3 * 0x80)
-	for i in xrange(n3):
-		print "\t", getter.get("128s").rstrip("\x00")
-	
-	####################
-	# The following two blocks are related!!!
-	header.seek(0x8)
-	n4 = header.get("H")
-	print "n = %d, @offset: 0x%x - 0x%x" % (n4, getter.offset, getter.offset + n4 * 0x30)
-	submesh_info_list = []
-	for i in xrange(n4):
-		blk_submesh_info = getter.block(0x30)
-		info = CSubMeshInfo()
-		info.read(blk_submesh_info)
-		submesh_info_list.append(info)
-		
-		
-	# reindexing
-	mesh_id = 1
-	for i, cur_submesh_info in enumerate(submesh_info_list):
-		cur_submesh_info.mesh_id = mesh_id
-		print "\t", mesh_id, map(hex, info.unknowns)
-		if i + 1 >= len(submesh_info_list):
-			break
-		next_submesh_info = submesh_info_list[i + 1]
-		if cur_submesh_info != next_submesh_info:
-			mesh_id += 1
-		
-	print "n1 = %d, @offset: 0x%x - 0x%x" % (n1, getter.offset, getter.offset + n1 * 0x90)
-	# getter.skip(n1 * 0x90)
-	for i in xrange(n1):
-		print getter.get("8f")
-		print getter.get("8f")
-		mat = []
-		for i in xrange(4):
-			mat.append(getter.get("4f"))
-			print mat[-1]
-		print "==========="
-		print getter.get("4f")
-		print
-		# print "\t", data
-	
-	# vertex buffer
-	print "vbsize = 0x%x, @offset: 0x%x - 0x%x" % (vb_size, getter.offset, getter.offset + vb_size)
-	# if vb_size % vertex_num != 0 or vb_size / vertex_num != 0x18:
-	# 	raise Exception("oh ~~~ no")
-	print "vertex size = 0x%x" % (vb_size / vertex_num)
-	# for i in xrange(vertex_num):
-	# 	pos = getter.get("3f")
-	# 	unk1 = getter.get("I")
-	# 	uv = numpy.frombuffer(getter.get_raw(4), dtype=numpy.dtype("<f2"))
-	# 	unk2 = getter.get("I")
-	# 	# print pos, (uv[0], uv[1])
-	# 	print hex(unk1), hex(unk2)
-	vb = getter.get_raw(vb_size)
-	
-	# index buffer
-	print "indices:"
-	print "n = 0x%x, @offset: 0x%x - 0x%x" % (indices_num, getter.offset,
-											getter.offset + indices_num * 0x2)
-	indices = getter.get("%dH" % indices_num)
-	# print indices
-	
-	getter.align(0x4)
-
-	n7 = getter.get("I")
-	assert n7 == 0, "not supported yet!"
-	getter.assert_end()
-	
-	for i, submesh_info in enumerate(submesh_info_list):
-		print "=============="
-		obj_file_str = dump_obj(submesh_info, vb, indices)
-		f_obj = open("objs/%d.obj" % i, "w")
-		f_obj.write(obj_file_str)
-		f_obj.close()
+	model = CModel()
+	model.read(getter)
 		
 	f.close()
 	
