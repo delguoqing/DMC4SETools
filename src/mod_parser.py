@@ -16,7 +16,7 @@ input_layout_descs = json.load(f)
 f.close()
 
 
-class CSubMeshInfo(object):
+class CBatchInfo(object):
 	def read(self, getter):
 		# vertex count
 		getter.seek(0x2)
@@ -148,6 +148,14 @@ class CModel(object):
 		n7 = mod.get("I")
 		mod.assert_end()
 		
+		print "dumping dp"
+		for batch_index in xrange(self.batch_num):
+			batch_info = self.batch_info_list[batch_index]
+			obj_str = dump_obj(batch_info, self.vb, self.indices)
+			fout = open("objs/batch_%d.obj" % batch_index, "w")
+			fout.write(obj_str)
+			fout.close()
+			
 	def read_bone(self, mod):
 		if self.bone_num <= 0:
 			return
@@ -185,21 +193,21 @@ class CModel(object):
 			print "\t", mod.get("128s").rstrip("\x00")
 			
 	def read_batch(self, mod):
-		batch_info_list = []
+		self.batch_info_list = []
 		for i in xrange(self.batch_num):
 			block = mod.block(0x30)
-			batch_info = CSubMeshInfo()
+			batch_info = CBatchInfo()
 			batch_info.read(block)
-			batch_info_list.append(batch_info)
+			self.batch_info_list.append(batch_info)
 			
 		# reindexing
 		mesh_id = 1
-		for i, cur_batch_info in enumerate(batch_info_list):
+		for i, cur_batch_info in enumerate(self.batch_info_list):
 			cur_batch_info.mesh_id = mesh_id
 			print "\t", mesh_id, map(hex, cur_batch_info.unknowns)
-			if i + 1 >= len(batch_info_list):
+			if i + 1 >= len(self.batch_info_list):
 				break
-			next_batch_info = batch_info_list[i + 1]
+			next_batch_info = self.batch_info_list[i + 1]
 			if cur_batch_info != next_batch_info:
 				mesh_id += 1			
 			
