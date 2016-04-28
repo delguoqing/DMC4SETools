@@ -183,8 +183,10 @@ class CModel(object):
 		mod.skip(0x100)
 		
 	def read_bounding_box(self, mod):
+		# not even read
+		print "bounding box: %d" % self.n2
 		for i in xrange(self.n2):
-			print "\t", mod.get("8f")
+			print "\t", mod.get("I7f")
 			
 	def read_submesh_names(self, mod):
 		print "n = %d, @offset: 0x%x - 0x%x" % (self.submesh_name_num, mod.offset,
