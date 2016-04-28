@@ -153,6 +153,10 @@ class getter(object):
 			return res[0]
 		return res
 		
+	def at(self, fmt, offset, force_tuple=False):
+		self.seek(offset)
+		return self.get(fmt, force_tuple=False)
+	
 	def block(self, size, endian=None):
 		data = self.get_raw(size)
 		if endian is None:

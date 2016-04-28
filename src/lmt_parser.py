@@ -116,7 +116,18 @@ class struc_9(object):
 	SIZE = 0x20
 	
 	def read(self, getter):
-		pass
+		get = getter.get
+		at = getter.at
+		seek = getter.seek
+		
+		at(0x0, "f")
+		at(0x4, "f")
+		at(0x8, "f")
+		at(0xc, "f")
+		at(0x10, "f")
+		at(0x14, "f")
+		at(0x18, "f")
+		at(0x1c, "f")
 	
 def parse(lmt_path):
 	f = open(lmt_path, "rb")

@@ -50,16 +50,19 @@ class CSubMeshInfo(object):
 		# dword @0x4 can be used to generate some kind of hash,
 		# will be replaced in memory with the value after hash
 		# but after hash, this value if identical to the value before hash
-		unk1 = getter.get("I") & 0xFFF000
+		self.unk1 = getter.get("I")
+		unk1 = self.unk1 & 0xFFF000
 		getter.seek(0xB)
-		unk2 = getter.get("B") & 0x3F		
-		self.cmp_id = (self.fvf, self.vb_offset, unk1, unk2, self.fvf_size)
+		self.unk2 = getter.get("B")
+		unk2 = self.unk2 & 0x3F		
+		self.cmp_id = (self.fvf, self.vb_offset, unk1 >> 12, unk2, self.fvf_size)
 		# unknown
 		getter.seek(0x25)
 		unk5 = getter.get("B")
 		getter.seek(0x2C)
 		unk6 = getter.get("I")	# will be replaced in memory after hash,
 								# pointer to `unk5`th block of size 0x90
+		self.submesh_name_index = (self.unk1 >> 12)
 
 		self.unknowns = []
 		getter.seek(0x0)
@@ -78,7 +81,22 @@ class CSubMeshInfo(object):
 		self.unknowns.append(getter.get("B"))
 		getter.seek(0x26)
 		self.unknowns.append(getter.get("H"))
+		self.unknowns.append(self.unk1 & 0xFFF)
 
+	def __eq__(self, o):
+		if self.fvf != o.fvf:
+			return False
+		if self.vb_offset != o.vb_offset:
+			return False
+		if (self.unk1 ^ o.unk1) & 0xFFF000:
+			return False
+		if (self.unk2 ^ o.unk2) & 0x3F:
+			return False
+		return self.fvf_size == o.fvf_size
+	
+	def __ne__(self, o):
+		return not self.__eq__(o)
+	
 class CBlock0(object):
 	def read(self, getter):
 		# out buffer here!!!! disk value is useless
@@ -143,8 +161,8 @@ def parse(path):
 	# submesh names
 	header.seek(0xa)
 	n3 = header.get("H")
-	print "submesh:", n3
-	print "n = %d, @offset: 0x%x - 0x%x" % (n3, getter.offset, getter.offset + n3 * 0x80)
+	print "submesh names:", n3
+	# print "n = %d, @offset: 0x%x - 0x%x" % (n3, getter.offset, getter.offset + n3 * 0x80)
 	for i in xrange(n3):
 		print "\t", getter.get("128s").rstrip("\x00")
 	
@@ -169,7 +187,7 @@ def parse(path):
 		if i + 1 >= len(submesh_info_list):
 			break
 		next_submesh_info = submesh_info_list[i + 1]
-		if cur_submesh_info.cmp_id != next_submesh_info.cmp_id:
+		if cur_submesh_info != next_submesh_info:
 			mesh_id += 1
 		
 	print "n1 = %d, @offset: 0x%x - 0x%x" % (n1, getter.offset, getter.offset + n1 * 0x90)
@@ -267,7 +285,7 @@ def dump_obj(submesh_info, vb, indices):
 		normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
 		obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
 
-	assert not unsupported_input_layout, "unsupported input layout %d" % submesh_info.input_layout_index
+	# assert not unsupported_input_layout, "unsupported input layout %d" % submesh_info.input_layout_index
 	
 	# faces
 	assert len(used_indices) % 3 == 0
