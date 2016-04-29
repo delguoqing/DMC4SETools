@@ -19,69 +19,57 @@ f.close()
 class CBatchInfo(object):
 	def read(self, getter):
 		# vertex count
-		getter.seek(0x2)
-		self.vertex_num = getter.get("H")
+		self.vertex_num = getter.get("H", offset=0x2)
 		# fvf_size
-		getter.seek(0xA)
-		self.fvf_size = getter.get("B")
+		self.fvf_size = getter.get("B", offset=0xA)
 		# fvf & 0xFFF
 		# fvf & 0xFFFFF
 		# ib offset
-		getter.seek(0x18)
-		self.ib_offset = getter.get("I")
+		self.ib_offset = getter.get("I", offset=0x18)
 		self.ib_size = getter.get("I")
 		# vb offset
-		getter.seek(0x10)
-		self.vb_offset = getter.get("I")
+		self.vb_offset = getter.get("I", offset=0x10)
 		# fvf flags: I don't know what is this...
-		getter.seek(0x14)
-		self.fvf = getter.get("I")
+		self.fvf = getter.get("I", offset=0x14)
 		self.input_layout_index = self.fvf & 0xFFF
 		# index min max
-		getter.seek(0x28)
-		self.index_min = getter.get("H")
+		self.index_min = getter.get("H", offset=0x28)
 		self.index_max = getter.get("H")
 		# 	index min duplicated?
-		getter.seek(0xC)
-		index_min_dup = getter.get("I")
+		index_min_dup = getter.get("I", offset=0xc)
 		assert index_min_dup == self.index_min, "0x%x vs 0x%x" % (self.index_min, index_min_dup)
-		# cmp id
-		getter.seek(0x4)
+		
 		# dword @0x4 can be used to generate some kind of hash,
 		# will be replaced in memory with the value after hash
 		# but after hash, this value if identical to the value before hash
-		self.unk1 = getter.get("I")
+		self.unk1 = getter.get("I", offset=0x4)
 		unk1 = self.unk1 & 0xFFF000
-		getter.seek(0xB)
-		self.unk2 = getter.get("B")
-		unk2 = self.unk2 & 0x3F		
+		self.unk2 = getter.get("B", offset=0xB)
+		unk2 = self.unk2 & 0x3F
+		
+		# cmp id
 		self.cmp_id = (self.fvf, self.vb_offset, unk1 >> 12, unk2, self.fvf_size)
 		# unknown
-		getter.seek(0x25)
-		unk5 = getter.get("B")
-		getter.seek(0x2C)
-		unk6 = getter.get("I")	# will be replaced in memory after hash,
+		unk5 = getter.get("B", offset=0x25)
+		unk6 = getter.get("I", offset=0x2c)	# will be replaced in memory after hash,
 								# pointer to `unk5`th block of size 0x90
-		self.submesh_name_index = (self.unk1 >> 12)
+		self.submesh_name_index = (self.unk1 >> 12) & 0xFFF
+		
+		# no use, will be assigned at runtime
+		batch_index = getter.get("H", offset=0x26)
 
 		self.unknowns = []
-		getter.seek(0x0)
-		self.unknowns.append(getter.get("H"))
-		getter.seek(0x4)
-		self.unknowns.append(getter.get("I"))
-		getter.seek(0x8)
-		self.unknowns.append(getter.get("H"))
-		getter.seek(0xB)
-		self.unknowns.append(getter.get("B"))
-		getter.seek(0x20)
-		self.unknowns.append(getter.get("I"))
-		getter.seek(0x24)
-		self.unknowns.append(getter.get("B"))
-		getter.seek(0x25)
-		self.unknowns.append(getter.get("B"))
-		getter.seek(0x26)
-		self.unknowns.append(getter.get("H"))
-		self.unknowns.append(self.unk1 & 0xFFF)
+		self.unknowns.append(getter.get("H", offset=0x0))	# size ok
+		v = getter.get("I", offset=0x4)
+		self.unknowns.append(v >> 24)						# size ok
+		self.unknowns.append(v & 0xFFF)						# size ok
+		self.unknowns.append(getter.get("B", offset=0x8))	# size ok
+		self.unknowns.append(getter.get("B", offset=0x9))
+		v = getter.get("B", offset=0xB)
+		self.unknowns.append(v >> 6)
+		self.unknowns.append(getter.get("I", offset=0x20))
+		self.unknowns.append(getter.get("B", offset=0x24))
+		self.unknowns.append(getter.get("B", offset=0x25))
 
 	def __eq__(self, o):
 		if self.fvf != o.fvf:
@@ -97,6 +85,11 @@ class CBatchInfo(object):
 	def __ne__(self, o):
 		return not self.__eq__(o)
 	
+	def print_unknowns(self):
+		# print self.unknowns
+		print "submesh_name_index:", (self.unk1 >> 12) & 0xFFF, "unknowns:",
+		print map(hex, self.unknowns)
+		
 class CBlock0(object):
 	def read(self, getter):
 		# out buffer here!!!! disk value is useless
@@ -191,10 +184,17 @@ class CModel(object):
 	def read_submesh_names(self, mod):
 		print "n = %d, @offset: 0x%x - 0x%x" % (self.submesh_name_num, mod.offset,
 												mod.offset + self.submesh_name_num * 0x80)
+		
 		for i in xrange(self.submesh_name_num):
-			print "\t", mod.get("128s").rstrip("\x00")
+			submesh_name = mod.get("128s").rstrip("\x00")
+			self.submesh_names.append(submesh_name)
+			
+		print "submesh names:"
+		for submesh_name in self.submesh_names:
+			print "\t", submesh_name
 			
 	def read_batch(self, mod):
+		print "batch infos:"
 		self.batch_info_list = []
 		for i in xrange(self.batch_num):
 			block = mod.block(0x30)
@@ -206,7 +206,11 @@ class CModel(object):
 		mesh_id = 1
 		for i, cur_batch_info in enumerate(self.batch_info_list):
 			cur_batch_info.mesh_id = mesh_id
-			print "\t", mesh_id, map(hex, cur_batch_info.unknowns)
+			submesh_name = self.submesh_names[cur_batch_info.submesh_name_index]
+			print "\t", submesh_name
+			print "\t", mesh_id,
+			cur_batch_info.print_unknowns()
+			print
 			if i + 1 >= len(self.batch_info_list):
 				break
 			next_batch_info = self.batch_info_list[i + 1]
