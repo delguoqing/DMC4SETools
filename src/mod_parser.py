@@ -52,7 +52,7 @@ class CBatchInfo(object):
 		unk5 = getter.get("B", offset=0x25)
 		unk6 = getter.get("I", offset=0x2c)	# will be replaced in memory after hash,
 								# pointer to `unk5`th block of size 0x90
-		self.submesh_name_index = (self.unk1 >> 12) & 0xFFF
+		self.material_index = (self.unk1 >> 12) & 0xFFF
 		
 		self.n1_block_index = getter.get("B", offset=0x25)
 		
@@ -87,13 +87,13 @@ class CBatchInfo(object):
 	
 	def print_unknowns(self):
 		# print self.unknowns
-		print "submesh_name_index:", (self.unk1 >> 12) & 0xFFF, "n1_idx:", self.n1_block_index, "unknowns:",
+		print "material_index:", self.material_index, "n1_idx:", self.n1_block_index, "unknowns:",
 		print map(hex, self.unknowns)
 		
 class CModel(object):
 	
 	def __init__(self):
-		self.submesh_names = []
+		self.material_names = []
 		self.header = None
 		
 	def read(self, mod):
@@ -105,7 +105,7 @@ class CModel(object):
 		assert field_4 == 0xd2, "invalid MOD file!"
 		self.bone_num = header.get("H", offset=0x6)
 		self.batch_num = header.get("H", 0x8)
-		self.submesh_name_num = header.get("H", offset=0xa)		
+		self.material_num = header.get("H", offset=0xa)		
 		vertex_num = header.get("I", offset=0xc)
 		index_num = header.get("I", offset=0x10)
 		vb_size = header.get("I", offset=0x18)
@@ -134,7 +134,7 @@ class CModel(object):
 		#return
 		self.read_bone(mod)
 		self.read_bounding_box(mod)
-		self.read_submesh_names(mod)
+		self.read_material_names(mod)
 		self.read_batch(mod)
 		self.read_unknown1(mod)
 		self.vb = mod.get_raw(vb_size)
@@ -184,17 +184,17 @@ class CModel(object):
 		for i in xrange(self.n2):
 			print "\t", mod.get("I7f")
 			
-	def read_submesh_names(self, mod):
-		print "n = %d, @offset: 0x%x - 0x%x" % (self.submesh_name_num, mod.offset,
-												mod.offset + self.submesh_name_num * 0x80)
+	def read_material_names(self, mod):
+		print "n = %d, @offset: 0x%x - 0x%x" % (self.material_num, mod.offset,
+												mod.offset + self.material_num * 0x80)
 		
-		for i in xrange(self.submesh_name_num):
-			submesh_name = mod.get("128s").rstrip("\x00")
-			self.submesh_names.append(submesh_name)
+		for i in xrange(self.material_name_num):
+			material_name = mod.get("128s").rstrip("\x00")
+			self.material_names.append(material_name)
 			
-		print "submesh names:"
-		for submesh_name in self.submesh_names:
-			print "\t", submesh_name
+		print "material names:"
+		for material_name in self.material_names:
+			print "\t", material_name
 			
 	def read_batch(self, mod):
 		print "dp infos:", self.batch_num
@@ -209,8 +209,8 @@ class CModel(object):
 		mesh_id = 1
 		for i, cur_batch_info in enumerate(self.batch_info_list):
 			cur_batch_info.mesh_id = mesh_id
-			submesh_name = self.submesh_names[cur_batch_info.submesh_name_index]
-			print "\t", submesh_name
+			material_name = self.material_names[cur_batch_info.material_index]
+			print "\t", material_name
 			print "\t", mesh_id,
 			cur_batch_info.print_unknowns()
 			print
