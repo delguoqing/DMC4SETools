@@ -46,15 +46,17 @@ class CBatchInfo(object):
 		# will be replaced in memory with the value after hash
 		# but after hash, this value if identical to the value before hash
 		self.unk1 = getter.get("I", offset=0x4)
-		unk1 = self.unk1 & 0xFFF000
+		self.material_index = (self.unk1 >> 12) & 0xFFF
+		self.bounding_box_id = (self.unk1 & 0xFFF)
+		
 		self.unk2 = getter.get("B", offset=0xB)
 		unk2 = self.unk2 & 0x3F
+		assert unk2 == 3	# always 3 in DMC4SE	
 		
 		# cmp id
-		self.cmp_id = (self.fvf, self.vb_offset, unk1 >> 12, unk2, self.fvf_size)
+		self.cmp_id = (self.fvf, self.vb_offset, self.material_index, unk2, self.fvf_size)
 		# not used
 		reserved = getter.get("I", offset=0x2c)	# will point to a n1 block when reading model
-		self.material_index = (self.unk1 >> 12) & 0xFFF
 		
 		self.n1_block_count = getter.get("B", offset=0x25)
 		self.n1_block_end_index = self.n1_block_start_index + self.n1_block_count
@@ -66,7 +68,6 @@ class CBatchInfo(object):
 		self.unknowns.append(getter.get("H", offset=0x0))	# size ok
 		v = getter.get("I", offset=0x4)
 		self.unknowns.append(v >> 24)						# size ok
-		self.unknowns.append(v & 0xFFF)						# size ok
 		self.unknowns.append(getter.get("B", offset=0x8))	# size ok
 		self.unknowns.append(getter.get("B", offset=0x9))
 		v = getter.get("B", offset=0xB)
@@ -89,8 +90,9 @@ class CBatchInfo(object):
 		return not self.__eq__(o)
 	
 	def print_unknowns(self):
-		# print self.unknowns
-		print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
+		#print "bb_id:", self.bounding_box_id,
+		#print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
+		print "cmp_id_", map(hex, self.cmp_id),
 		print "unknowns:", map(hex, self.unknowns)
 		
 class CModel(object):
@@ -99,6 +101,7 @@ class CModel(object):
 		self.material_names = []
 		self.header = None
 		self.cur_n1_block_index = 0
+		self.id_2_bounding_box = {}
 		
 	def read(self, mod):
 		header = mod.block(0x80)
@@ -159,7 +162,9 @@ class CModel(object):
 		# 0x70 ~ 0x80
 		# not used
 		
+		# 0x84
 		self.n1 = mod.get("I")
+		
 		self.read_bone(mod)
 		# seems like this data block is not used in the game
 		self.read_bounding_box(mod)
@@ -181,6 +186,8 @@ class CModel(object):
 			for input_element in input_layout_desc:
 				print "%s%d: %d" % (input_element["SematicName"], input_element["SematicIndex"],
 									input_element["Format"])
+		
+			assert batch_info.bounding_box_id in self.id_2_bounding_box
 			
 			continue
 		
@@ -221,7 +228,9 @@ class CModel(object):
 		mod.seek(self.n2_array_offset)
 		print "bounding box: %d" % self.n2
 		for i in xrange(self.n2):
-			print "\t", mod.get("I7f")
+			vals = mod.get("I7f")
+			self.id_2_bounding_box[vals[0]] = vals
+			print "\t", vals
 			
 	def read_material_names(self, mod):
 		mod.seek(self.material_names_offset)
@@ -378,33 +387,6 @@ def dump_obj(mod, submesh_info, vb, indices):
 		
 	res = "\n".join(obj_lines)
 	return res
-		
-def reindex_submesh_info():
-	# psudo code for reindexing submesh info
-	# next_idx = 1
-	# for i in xrange(n4):
-	# 	info[i][0x26] = (short)next_idx
-	# 	if i + 1 >= n4:
-	# 		break
-	# 	if info[i][0x14] != info[i + 1][0x14]:
-	# 		next_idx += 1
-	# 		break
-	#	# vb offset
-	# 	if info[i][0x10] != info[i + 1][0x10]:
-	# 		next_idx += 1
-	# 		break
-	#	# looks like bitflag
-	# 	if ((info[i][0x4] ^ info[i + 1][0x4]) & 0xFFF000) != 0:
-	# 		next_idx += 1
-	# 		break
-	#	# looks like bitflag
-	# 	if (((byte)info[i][0xB] ^ (byte)info[i + 1][0xB]) & 0x00003F) != 0:
-	# 		next_idx += 1
-	# 		break
-	# 	if (byte)info[i][0xA] != (byte)info[i + 1][0xA]:
-	# 		next_id += 1
-	# 		break
-	pass
 		
 def run_test(root, root2, move_when_error=False):
 	for model_path in glob.glob(os.path.join(root, "*.MOD")):
