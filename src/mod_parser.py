@@ -125,14 +125,9 @@ class CModel(object):
 		self.max_y = header.get("f", offset=0x64)
 		self.max_z = header.get("f", offset=0x68)
 		reserved = header.get("f", offset=0x6c)
-		
-		# NOTE: not a matrix
-		mat = [
-			header.get("4f", offset=0x50),
-			header.get("4f", offset=0x60),
-		]
-		print "world matrix"
-		print mat
+		self.bounding_box = (self.min_x, self.min_y, self.min_z, \
+							 self.max_x, self.max_y, self.max_z)
+		print "bounding box: (%f, %f, %f) - (%f, %f, %f)" % self.bounding_box
 		
 		self.n1 = mod.get("I")
 		#assert self.n1 == self.batch_num
