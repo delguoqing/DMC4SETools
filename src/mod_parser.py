@@ -16,6 +16,10 @@ input_layout_descs = json.load(f)
 f.close()
 
 class CBatchInfo(object):
+	def __init__(self, n1_block_start_index):
+		self.n1_block_start_index = n1_block_start_index
+		self.n1_block_end_index = 0
+		
 	def read(self, getter):
 		# vertex count
 		self.vertex_num = getter.get("H", offset=0x2)
@@ -48,13 +52,12 @@ class CBatchInfo(object):
 		
 		# cmp id
 		self.cmp_id = (self.fvf, self.vb_offset, unk1 >> 12, unk2, self.fvf_size)
-		# unknown
-		unk5 = getter.get("B", offset=0x25)
-		unk6 = getter.get("I", offset=0x2c)	# will be replaced in memory after hash,
-								# pointer to `unk5`th block of size 0x90
+		# not used
+		reserved = getter.get("I", offset=0x2c)	# will point to a n1 block when reading model
 		self.material_index = (self.unk1 >> 12) & 0xFFF
 		
-		self.n1_block_index = getter.get("B", offset=0x25)
+		self.n1_block_count = getter.get("B", offset=0x25)
+		self.n1_block_end_index = self.n1_block_start_index + self.n1_block_count
 		
 		# no use, will be assigned at runtime
 		batch_index = getter.get("H", offset=0x26)
@@ -87,14 +90,17 @@ class CBatchInfo(object):
 	
 	def print_unknowns(self):
 		# print self.unknowns
-		print "material_index:", self.material_index, "n1_idx:", self.n1_block_index, "unknowns:",
-		print map(hex, self.unknowns)
+		print "material_index:",
+		print self.material_index, "n1_idx:[%d, %d)" % (self.n1_block_start_index,
+														self.n1_block_end_index),
+		print "unknowns:", map(hex, self.unknowns)
 		
 class CModel(object):
 	
 	def __init__(self):
 		self.material_names = []
 		self.header = None
+		self.cur_n1_block_index = 0
 		
 	def read(self, mod):
 		header = mod.block(0x80)
@@ -135,6 +141,8 @@ class CModel(object):
 		# floating point block
 		self.inv_world_translation = header.get("3f", offset=0x40)	# ?
 		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
+		print "inv_world_translation:", self.inv_world_translation
+		print "world_scale_factor:", self.world_scale_factor
 		
 		# bounding box
 		self.min_x = header.get("f", offset=0x50)
@@ -150,14 +158,16 @@ class CModel(object):
 		self.bounding_box = (self.min_x, self.min_y, self.min_z, \
 							 self.max_x, self.max_y, self.max_z)
 		print "bounding box: (%f, %f, %f) - (%f, %f, %f)" % self.bounding_box
+		# 0x70 ~ 0x80
+		# not used
 		
 		self.n1 = mod.get("I")
-		#assert self.n1 == self.batch_num
-		#return
 		self.read_bone(mod)
+		# seems like this data block is not used in the game
 		self.read_bounding_box(mod)
 		self.read_material_names(mod)
 		self.read_batch(mod)
+		# looks like constant buffer
 		self.read_unknown1(mod)
 		self.read_vb(mod)	
 		self.read_ib(mod)
@@ -224,8 +234,9 @@ class CModel(object):
 		self.batch_info_list = []
 		for i in xrange(self.batch_num):
 			block = mod.block(0x30)
-			batch_info = CBatchInfo()
+			batch_info = CBatchInfo(self.cur_n1_block_index)
 			batch_info.read(block)
+			self.cur_n1_block_index += batch_info.n1_block_count
 			self.batch_info_list.append(batch_info)
 			
 		# reindexing
@@ -304,7 +315,6 @@ def dump_obj(mod, submesh_info, vb, indices):
 	
 	# parse referrenced vertex buffer
 	unsupported_input_layout = False
-	world_matrix = mod.n1_block_list[submesh_info.n1_block_index].getI()
 	for i in xrange(submesh_info.index_max + 1):
 		# read vertex data using input layout
 		vertex = {}
@@ -323,15 +333,14 @@ def dump_obj(mod, submesh_info, vb, indices):
 			unsupported_input_layout = True
 		# transform vertex data to its real meaning
 		pos = vertex_trans["POSITION"]
-		assert mod.min_x <= pos[0] <= mod.max_x
-		assert mod.min_y <= pos[1] <= mod.max_y
-		assert mod.min_z <= pos[2] <= mod.max_z
+		#assert mod.min_x <= pos[0] <= mod.max_x
+		#assert mod.min_y <= pos[1] <= mod.max_y
+		#assert mod.min_z <= pos[2] <= mod.max_z
 		
 		np_pos = (pos[0] - mod.inv_world_translation[0],
 				  pos[1] - mod.inv_world_translation[1],
 				  pos[2] - mod.inv_world_translation[2],)
 		np_pos = pos
-		#np_pos = (numpy.matrix([pos[0], pos[1], pos[2], 1.0]) * world_matrix).getA1()
 		#print pos
 		#print np_pos[0], np_pos[1], np_pos[2]
 		obj_lines.append("v %f %f %f" % (np_pos[0], np_pos[1], np_pos[2]))
