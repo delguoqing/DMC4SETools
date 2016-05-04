@@ -90,9 +90,7 @@ class CBatchInfo(object):
 	
 	def print_unknowns(self):
 		# print self.unknowns
-		print "material_index:",
-		print self.material_index, "n1_idx:[%d, %d)" % (self.n1_block_start_index,
-														self.n1_block_end_index),
+		print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
 		print "unknowns:", map(hex, self.unknowns)
 		
 class CModel(object):
@@ -177,11 +175,20 @@ class CModel(object):
 		print "dumping dp"
 		for batch_index in xrange(self.batch_num):
 			batch_info = self.batch_info_list[batch_index]
+
+			input_layout_desc = input_layout_descs[str(batch_info.input_layout_index)]
+			print "input_layout_index", batch_info.input_layout_index
+			for input_element in input_layout_desc:
+				print "%s%d: %d" % (input_element["SematicName"], input_element["SematicIndex"],
+									input_element["Format"])
+			
+			continue
+		
 			obj_str = dump_obj(self, batch_info, self.vb, self.indices)
 			fout = open("objs/batch_%d.obj" % batch_index, "w")
 			fout.write(obj_str)
 			fout.close()
-			
+
 	def read_bone(self, mod):
 		if self.bone_num <= 0:
 			return
@@ -260,16 +267,26 @@ class CModel(object):
 		self.n1_block_list = []
 		# getter.skip(n1 * 0x90)
 		for i in xrange(self.n1):
-			print mod.get("8f")
-			print mod.get("8f")
-			mat = []
+			print mod.get("I7f")
+			vec1 = mod.get("3f")
+			reserved_0 = mod.get("I")
+			assert reserved_0 == 0
+			vec2 = mod.get("3f")
+			reserved_1 = mod.get("I")
+			assert reserved_1 == 0			
+			print "min", vec1
+			print "max", vec2
 			print "==========="
+			mat = []
 			for i in xrange(4):
 				mat.append(mod.get("4f"))
 				print mat[-1]
-			self.n1_block_list.append(numpy.matrix([mat[0], mat[1], mat[2], mat[3]]))
 			print "==========="
-			print mod.get("4f")
+			self.n1_block_list.append(numpy.matrix([mat[0], mat[1], mat[2], mat[3]]))
+			vec3 = mod.get("3f")
+			reserved_2 = mod.get("I")
+			assert reserved_2 == 0
+			print "vec", vec3
 			print
 			# print "\t", data
 			
