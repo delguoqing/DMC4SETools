@@ -103,18 +103,29 @@ class CModel(object):
 		assert FOURCC == "MOD\x00", "invalid FOURCC %s" % FOURCC
 		field_4 = header.get("H", offset=0x4)
 		assert field_4 == 0xd2, "invalid MOD file!"
+		
 		self.bone_num = header.get("H", offset=0x6)
 		self.batch_num = header.get("H", 0x8)
 		self.material_num = header.get("H", offset=0xa)		
 		vertex_num = header.get("I", offset=0xc)
-		index_num = header.get("I", offset=0x10)
+		self.index_num = header.get("I", offset=0x10)
 		polygon_num = header.get("I", offset=0x14)
 		# DMC4SE uses only TRIANGLE_LIST as its primitive type
-		assert polygon_num * 3 == index_num		
-		vb_size = header.get("I", offset=0x18)
-		
+		assert polygon_num * 3 == self.index_num		
+		self.vb_size = header.get("I", offset=0x18)
+		reserved_0 = header.get("I", offset=0x1c)
+		assert reserved_0 == 0
 		self.n2 = header.get("I", offset=0x20)
-		header.get("I", offset=0x34)
+		
+		# 0x24 ~ 0x40
+		# offsets for various sub blocks
+		self.bone_info_offset = header.get("I", offset=0x24)
+		self.n2_array_offset = header.get("I", offset=0x28)
+		self.material_names_offset = header.get("I", offset=0x2c)
+		self.primitives_offset = header.get("I", offset=0x30)
+		self.vb_offset = header.get("I", offset=0x34)
+		self.ib_offset = header.get("I", offset=0x38)
+		self.unk_offset = header.get("I", offset=0x3c)	# not useful in this game
 		
 		self.inv_world_translation = header.get("3f", offset=0x40)	# ?
 		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
@@ -123,11 +134,13 @@ class CModel(object):
 		self.min_x = header.get("f", offset=0x50)
 		self.min_y = header.get("f", offset=0x54)
 		self.min_z = header.get("f", offset=0x58)
-		reserved = header.get("f", offset=0x5c)
+		reserved_1 = header.get("I", offset=0x5c)
+		assert reserved_1 == 0
 		self.max_x = header.get("f", offset=0x60)
 		self.max_y = header.get("f", offset=0x64)
 		self.max_z = header.get("f", offset=0x68)
-		reserved = header.get("f", offset=0x6c)
+		reserved_2 = header.get("I", offset=0x6c)
+		assert reserved_2 == 0
 		self.bounding_box = (self.min_x, self.min_y, self.min_z, \
 							 self.max_x, self.max_y, self.max_z)
 		print "bounding box: (%f, %f, %f) - (%f, %f, %f)" % self.bounding_box
@@ -140,11 +153,9 @@ class CModel(object):
 		self.read_material_names(mod)
 		self.read_batch(mod)
 		self.read_unknown1(mod)
-		self.vb = mod.get_raw(vb_size)
-		self.indices = mod.get("%dH" % index_num)
-		
-		mod.align(0x4)
-		n7 = mod.get("I")
+		self.read_vb(mod)	
+		self.read_ib(mod)
+		self.read_not_used(mod)
 		mod.assert_end()
 		
 		print "dumping dp"
@@ -158,6 +169,7 @@ class CModel(object):
 	def read_bone(self, mod):
 		if self.bone_num <= 0:
 			return
+		mod.seek(self.bone_info_offset)
 		print "reading bone data, bone_num = %d" % self.bone_num
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x18)
 		for bone_index in xrange(self.bone_num):
@@ -180,18 +192,19 @@ class CModel(object):
 			print
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + 0x100)
 		mod.skip(0x100)
-		
+	
+	# not even read by the game
 	def read_bounding_box(self, mod):
-		# not even read
+		mod.seek(self.n2_array_offset)
 		print "bounding box: %d" % self.n2
 		for i in xrange(self.n2):
 			print "\t", mod.get("I7f")
 			
 	def read_material_names(self, mod):
+		mod.seek(self.material_names_offset)
 		print "n = %d, @offset: 0x%x - 0x%x" % (self.material_num, mod.offset,
 												mod.offset + self.material_num * 0x80)
-		
-		for i in xrange(self.material_name_num):
+		for i in xrange(self.material_num):
 			material_name = mod.get("128s").rstrip("\x00")
 			self.material_names.append(material_name)
 			
@@ -200,6 +213,7 @@ class CModel(object):
 			print "\t", material_name
 			
 	def read_batch(self, mod):
+		mod.seek(self.primitives_offset)
 		print "dp infos:", self.batch_num
 		self.batch_info_list = []
 		for i in xrange(self.batch_num):
@@ -242,6 +256,19 @@ class CModel(object):
 			print
 			# print "\t", data
 			
+	def read_vb(self, mod):
+		mod.seek(self.vb_offset)
+		self.vb = mod.get_raw(self.vb_size)
+	
+	def read_ib(self, mod):
+		mod.seek(self.ib_offset)
+		self.indices = mod.get("%dH" % self.index_num)
+		
+	def read_not_used(self, mod):
+		mod.seek(self.unk_offset)
+		n7 = mod.get("I")
+		assert n7 == 0
+	
 def parse(path):
 	f = open(path, "rb")
 	getter = util.get_getter(f, "<")
