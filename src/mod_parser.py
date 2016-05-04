@@ -99,11 +99,15 @@ class CModel(object):
 	def read(self, mod):
 		header = mod.block(0x80)
 		
+		# 0x0 ~ 0x6
+		# fourcc or version or mask verification
 		FOURCC = header.get("4s", offset=0x0)
 		assert FOURCC == "MOD\x00", "invalid FOURCC %s" % FOURCC
 		field_4 = header.get("H", offset=0x4)
 		assert field_4 == 0xd2, "invalid MOD file!"
 		
+		# 0x6 ~ 0x40
+		# nums and sizes
 		self.bone_num = header.get("H", offset=0x6)
 		self.batch_num = header.get("H", 0x8)
 		self.material_num = header.get("H", offset=0xa)		
@@ -127,6 +131,8 @@ class CModel(object):
 		self.ib_offset = header.get("I", offset=0x38)
 		self.unk_offset = header.get("I", offset=0x3c)	# not useful in this game
 		
+		# 0x40 ~ 0x80
+		# floating point block
 		self.inv_world_translation = header.get("3f", offset=0x40)	# ?
 		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
 		
