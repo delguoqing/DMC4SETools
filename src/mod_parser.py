@@ -15,7 +15,6 @@ f = open("windbg/input_layouts.json", "r")
 input_layout_descs = json.load(f)
 f.close()
 
-
 class CBatchInfo(object):
 	def read(self, getter):
 		# vertex count
@@ -55,9 +54,11 @@ class CBatchInfo(object):
 								# pointer to `unk5`th block of size 0x90
 		self.submesh_name_index = (self.unk1 >> 12) & 0xFFF
 		
+		self.n1_block_index = getter.get("B", offset=0x25)
+		
 		# no use, will be assigned at runtime
 		batch_index = getter.get("H", offset=0x26)
-
+		
 		self.unknowns = []
 		self.unknowns.append(getter.get("H", offset=0x0))	# size ok
 		v = getter.get("I", offset=0x4)
@@ -69,7 +70,6 @@ class CBatchInfo(object):
 		self.unknowns.append(v >> 6)
 		self.unknowns.append(getter.get("I", offset=0x20))
 		self.unknowns.append(getter.get("B", offset=0x24))
-		self.unknowns.append(getter.get("B", offset=0x25))
 
 	def __eq__(self, o):
 		if self.fvf != o.fvf:
@@ -87,21 +87,8 @@ class CBatchInfo(object):
 	
 	def print_unknowns(self):
 		# print self.unknowns
-		print "submesh_name_index:", (self.unk1 >> 12) & 0xFFF, "unknowns:",
+		print "submesh_name_index:", (self.unk1 >> 12) & 0xFFF, "n1_idx:", self.n1_block_index, "unknowns:",
 		print map(hex, self.unknowns)
-		
-class CBlock0(object):
-	def read(self, getter):
-		# out buffer here!!!! disk value is useless
-		getter.seek(0x20)
-		
-		# some kind of matrix here: inverse world?
-		# 0x40 ~ 0x8c float
-		getter.seek(0x40)
-		mat = getter.get("16f")
-		
-		# some kind of position here?
-		getter.get("4f")
 		
 class CModel(object):
 	
@@ -125,10 +112,31 @@ class CModel(object):
 		
 		self.n2 = header.get("I", offset=0x20)
 		header.get("I", offset=0x34)
-		header.get("f", offset=0x40)
+		
+		self.inv_world_translation = header.get("3f", offset=0x40)	# ?
+		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
+		
+		# bounding box
+		self.min_x = header.get("f", offset=0x50)
+		self.min_y = header.get("f", offset=0x54)
+		self.min_z = header.get("f", offset=0x58)
+		reserved = header.get("f", offset=0x5c)
+		self.max_x = header.get("f", offset=0x60)
+		self.max_y = header.get("f", offset=0x64)
+		self.max_z = header.get("f", offset=0x68)
+		reserved = header.get("f", offset=0x6c)
+		
+		# NOTE: not a matrix
+		mat = [
+			header.get("4f", offset=0x50),
+			header.get("4f", offset=0x60),
+		]
+		print "world matrix"
+		print mat
 		
 		self.n1 = mod.get("I")
-		
+		#assert self.n1 == self.batch_num
+		#return
 		self.read_bone(mod)
 		self.read_bounding_box(mod)
 		self.read_submesh_names(mod)
@@ -144,7 +152,7 @@ class CModel(object):
 		print "dumping dp"
 		for batch_index in xrange(self.batch_num):
 			batch_info = self.batch_info_list[batch_index]
-			obj_str = dump_obj(batch_info, self.vb, self.indices)
+			obj_str = dump_obj(self, batch_info, self.vb, self.indices)
 			fout = open("objs/batch_%d.obj" % batch_index, "w")
 			fout.write(obj_str)
 			fout.close()
@@ -194,7 +202,7 @@ class CModel(object):
 			print "\t", submesh_name
 			
 	def read_batch(self, mod):
-		print "batch infos:"
+		print "dp infos:", self.batch_num
 		self.batch_info_list = []
 		for i in xrange(self.batch_num):
 			block = mod.block(0x30)
@@ -220,14 +228,17 @@ class CModel(object):
 	def read_unknown1(self, mod):
 		print "n1 = %d, @offset: 0x%x - 0x%x" % (self.n1, mod.offset,
 												 mod.offset + self.n1 * 0x90)
+		self.n1_block_list = []
 		# getter.skip(n1 * 0x90)
 		for i in xrange(self.n1):
 			print mod.get("8f")
 			print mod.get("8f")
 			mat = []
+			print "==========="
 			for i in xrange(4):
 				mat.append(mod.get("4f"))
 				print mat[-1]
+			self.n1_block_list.append(numpy.matrix([mat[0], mat[1], mat[2], mat[3]]))
 			print "==========="
 			print mod.get("4f")
 			print
@@ -242,7 +253,7 @@ def parse(path):
 		
 	f.close()
 	
-def dump_obj(submesh_info, vb, indices):
+def dump_obj(mod, submesh_info, vb, indices):
 	getter = util.get_getter(vb, "<")
 	print "vb_offset = 0x%x, fvf_size=0x%x, fvf=0x%x, vertex_num=%d" % (
 		submesh_info.vb_offset, submesh_info.fvf_size, submesh_info.fvf, submesh_info.vertex_num)
@@ -262,6 +273,7 @@ def dump_obj(submesh_info, vb, indices):
 	
 	# parse referrenced vertex buffer
 	unsupported_input_layout = False
+	world_matrix = mod.n1_block_list[submesh_info.n1_block_index].getI()
 	for i in xrange(submesh_info.index_max + 1):
 		# read vertex data using input layout
 		vertex = {}
@@ -273,7 +285,6 @@ def dump_obj(submesh_info, vb, indices):
 				vertex[element["SematicName"]] = attri
 			else:
 				vertex[element["SematicName"] + str(element["SematicIndex"])] = attri
-		print vertex
 		try:
 			vertex_trans = input_layout.parse(vertex, submesh_info.input_layout_index)
 		except:
@@ -281,7 +292,18 @@ def dump_obj(submesh_info, vb, indices):
 			unsupported_input_layout = True
 		# transform vertex data to its real meaning
 		pos = vertex_trans["POSITION"]
-		obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
+		assert mod.min_x <= pos[0] <= mod.max_x
+		assert mod.min_y <= pos[1] <= mod.max_y
+		assert mod.min_z <= pos[2] <= mod.max_z
+		
+		np_pos = (pos[0] - mod.inv_world_translation[0],
+				  pos[1] - mod.inv_world_translation[1],
+				  pos[2] - mod.inv_world_translation[2],)
+		np_pos = pos
+		#np_pos = (numpy.matrix([pos[0], pos[1], pos[2], 1.0]) * world_matrix).getA1()
+		#print pos
+		#print np_pos[0], np_pos[1], np_pos[2]
+		obj_lines.append("v %f %f %f" % (np_pos[0], np_pos[1], np_pos[2]))
 		uv = vertex_trans.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
 		obj_lines.append("vt %f %f" % (uv[0], uv[1]))
 		normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
