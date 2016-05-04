@@ -108,6 +108,9 @@ class CModel(object):
 		self.material_num = header.get("H", offset=0xa)		
 		vertex_num = header.get("I", offset=0xc)
 		index_num = header.get("I", offset=0x10)
+		polygon_num = header.get("I", offset=0x14)
+		# DMC4SE uses only TRIANGLE_LIST as its primitive type
+		assert polygon_num * 3 == index_num		
 		vb_size = header.get("I", offset=0x18)
 		
 		self.n2 = header.get("I", offset=0x20)
