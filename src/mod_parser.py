@@ -15,7 +15,7 @@ f = open("windbg/input_layouts.json", "r")
 input_layout_descs = json.load(f)
 f.close()
 
-class CBatchInfo(object):
+class CDpInfo(object):
 	def __init__(self, n1_block_start_index):
 		self.n1_block_start_index = n1_block_start_index
 		self.n1_block_end_index = 0
@@ -62,7 +62,7 @@ class CBatchInfo(object):
 		self.n1_block_end_index = self.n1_block_start_index + self.n1_block_count
 		
 		# no use, will be assigned at runtime
-		batch_index = getter.get("H", offset=0x26)
+		self.batch_id = getter.get("H", offset=0x26)
 		
 		self.unknowns = []
 		self.unknowns.append(getter.get("H", offset=0x0))	# size ok
@@ -116,7 +116,7 @@ class CModel(object):
 		# 0x6 ~ 0x40
 		# nums and sizes
 		self.bone_num = header.get("H", offset=0x6)
-		self.batch_num = header.get("H", 0x8)
+		self.dp_num = header.get("H", 0x8)
 		self.material_num = header.get("H", offset=0xa)		
 		vertex_num = header.get("I", offset=0xc)
 		self.index_num = header.get("I", offset=0x10)
@@ -169,7 +169,7 @@ class CModel(object):
 		# seems like this data block is not used in the game
 		self.read_bounding_box(mod)
 		self.read_material_names(mod)
-		self.read_batch(mod)
+		self.read_dp(mod)
 		# looks like constant buffer
 		self.read_unknown1(mod)
 		self.read_vb(mod)	
@@ -178,21 +178,21 @@ class CModel(object):
 		mod.assert_end()
 		
 		print "dumping dp"
-		for batch_index in xrange(self.batch_num):
-			batch_info = self.batch_info_list[batch_index]
+		for dp_index in xrange(self.dp_num):
+			dp_info = self.dp_info_list[dp_index]
 
-			input_layout_desc = input_layout_descs[str(batch_info.input_layout_index)]
-			print "input_layout_index", batch_info.input_layout_index
+			input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
+			print "input_layout_index", dp_info.input_layout_index
 			for input_element in input_layout_desc:
 				print "%s%d: %d" % (input_element["SematicName"], input_element["SematicIndex"],
 									input_element["Format"])
 		
-			assert batch_info.bounding_box_id in self.id_2_bounding_box
+			assert dp_info.bounding_box_id in self.id_2_bounding_box
 			
 			continue
 		
-			obj_str = dump_obj(self, batch_info, self.vb, self.indices)
-			fout = open("objs/batch_%d.obj" % batch_index, "w")
+			obj_str = dump_obj(self, dp_info, self.vb, self.indices)
+			fout = open("objs/dp_%d.obj" % dp_index, "w")
 			fout.write(obj_str)
 			fout.close()
 
@@ -244,31 +244,31 @@ class CModel(object):
 		for material_name in self.material_names:
 			print "\t", material_name
 			
-	def read_batch(self, mod):
+	def read_dp(self, mod):
 		mod.seek(self.primitives_offset)
-		print "dp infos:", self.batch_num
-		self.batch_info_list = []
-		for i in xrange(self.batch_num):
+		print "dp infos:", self.dp_num
+		self.dp_info_list = []
+		for i in xrange(self.dp_num):
 			block = mod.block(0x30)
-			batch_info = CBatchInfo(self.cur_n1_block_index)
-			batch_info.read(block)
-			self.cur_n1_block_index += batch_info.n1_block_count
-			self.batch_info_list.append(batch_info)
+			dp_info = CDpInfo(self.cur_n1_block_index)
+			dp_info.read(block)
+			self.cur_n1_block_index += dp_info.n1_block_count
+			self.dp_info_list.append(dp_info)
 			
 		# reindexing
-		mesh_id = 1
-		for i, cur_batch_info in enumerate(self.batch_info_list):
-			cur_batch_info.mesh_id = mesh_id
-			material_name = self.material_names[cur_batch_info.material_index]
+		batch_id = 1
+		for i, cur_dp_info in enumerate(self.dp_info_list):
+			cur_dp_info.batch_id = batch_id
+			material_name = self.material_names[cur_dp_info.material_index]
 			print "\t", material_name
-			print "\t", mesh_id,
-			cur_batch_info.print_unknowns()
+			print "\t", batch_id,
+			cur_dp_info.print_unknowns()
 			print
-			if i + 1 >= len(self.batch_info_list):
+			if i + 1 >= len(self.dp_info_list):
 				break
-			next_batch_info = self.batch_info_list[i + 1]
-			if cur_batch_info != next_batch_info:
-				mesh_id += 1			
+			next_dp_info = self.dp_info_list[i + 1]
+			if cur_dp_info != next_dp_info:
+				batch_id += 1			
 			
 	def read_unknown1(self, mod):
 		print "n1 = %d, @offset: 0x%x - 0x%x" % (self.n1, mod.offset,
