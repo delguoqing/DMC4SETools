@@ -191,7 +191,7 @@ class CModel(object):
 			
 			continue
 		
-			obj_str = dump_obj(self, dp_info, self.vb, self.indices)
+			obj_str = dump_obj(self, dp_info)
 			fout = open("objs/dp_%d.obj" % dp_index, "w")
 			fout.write(obj_str)
 			fout.close()
@@ -305,7 +305,7 @@ class CModel(object):
 	
 	def read_ib(self, mod):
 		mod.seek(self.ib_offset)
-		self.indices = mod.get("%dH" % self.index_num)
+		self.ib = mod.get("%dH" % self.index_num)
 		
 	def read_not_used(self, mod):
 		mod.seek(self.unk_offset)
@@ -321,27 +321,27 @@ def parse(path):
 		
 	f.close()
 	
-def dump_obj(mod, submesh_info, vb, indices):
-	getter = util.get_getter(vb, "<")
+def dump_obj(mod, dp_info):
+	getter = util.get_getter(mod.vb, "<")
 	print "vb_offset = 0x%x, fvf_size=0x%x, fvf=0x%x, vertex_num=%d" % (
-		submesh_info.vb_offset, submesh_info.fvf_size, submesh_info.fvf, submesh_info.vertex_num)
+		dp_info.vb_offset, dp_info.fvf_size, dp_info.fvf, dp_info.vertex_num)
 	
-	used_indices = indices[submesh_info.ib_offset: submesh_info.ib_offset + submesh_info.ib_size]
+	used_indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
 	min_index = min(used_indices)
 	max_index = max(used_indices)
-	assert min_index == submesh_info.index_min and max_index == submesh_info.index_max
+	assert min_index == dp_info.index_min and max_index == dp_info.index_max
 	
 	obj_lines = []
 	
 	vertices = []
-	getter.seek(submesh_info.vb_offset)
+	getter.seek(dp_info.vb_offset)
 	
-	input_layout_desc = input_layout_descs[str(submesh_info.input_layout_index)]
-	print "input_layout_index", submesh_info.input_layout_index
+	input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
+	print "input_layout_index", dp_info.input_layout_index
 	
 	# parse referrenced vertex buffer
 	unsupported_input_layout = False
-	for i in xrange(submesh_info.index_max + 1):
+	for i in xrange(dp_info.index_max + 1):
 		# read vertex data using input layout
 		vertex = {}
 		for element in input_layout_desc:
@@ -353,7 +353,7 @@ def dump_obj(mod, submesh_info, vb, indices):
 			else:
 				vertex[element["SematicName"] + str(element["SematicIndex"])] = attri
 		try:
-			vertex_trans = input_layout.parse(vertex, submesh_info.input_layout_index)
+			vertex_trans = input_layout.parse(vertex, dp_info.input_layout_index)
 		except:
 			vertex_trans = vertex
 			unsupported_input_layout = True
@@ -375,7 +375,7 @@ def dump_obj(mod, submesh_info, vb, indices):
 		normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
 		obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
 
-	# assert not unsupported_input_layout, "unsupported input layout %d" % submesh_info.input_layout_index
+	# assert not unsupported_input_layout, "unsupported input layout %d" % dp_info.input_layout_index
 	
 	# faces
 	assert len(used_indices) % 3 == 0
