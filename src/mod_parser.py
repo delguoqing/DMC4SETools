@@ -11,6 +11,9 @@ import input_layout
 
 from d3d10 import dxgi_format_parse
 
+DUMP_OBJ_WRITE_NORMAL = False
+DUMP_OBJ_WRITE_UV = False
+
 f = open("windbg/input_layouts.json", "r")
 input_layout_descs = json.load(f)
 f.close()
@@ -193,8 +196,6 @@ class CModel(object):
 									input_element["Format"])
 		
 			assert dp_info.bounding_box_id in self.id_2_bounding_box
-			
-			continue
 		
 			obj_str = dump_obj(self, dp_info)
 			fout = open("objs/dp_%d.obj" % dp_index, "w")
@@ -327,41 +328,35 @@ def parse(path):
 	f.close()
 	
 def dump_obj(mod, dp_info):
-	getter = util.get_getter(mod.vb, "<")
 	print dp_info
-	
-	indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
-	util.assert_min_max(indices, min_index, max_index)
-	
-	obj_lines = []
-	getter.seek(dp_info.vb_offset)
-	
 	input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
 	print "input_layout_index", dp_info.input_layout_index
 	
-	# parse referrenced vertex buffer
+	# Parse
+	vertices = []
+	vertex_format_size = calc_vertex_format_size(input_layout_desc)	
+	getter = util.get_getter(mod.vb, "<")
+	getter.seek(dp_info.vb_offset + vertex_format_size * dp_info.index_min)
 	unsupported_input_layout = False
-	for i in xrange(dp_info.index_max + 1):
-		# read vertex data using input layout
+	for i in xrange(dp_info.index_min, dp_info.index_max + 1, 1):
 		vertex = parse_vertex(getter, input_layout_desc)
-
 		# transform vertex data to its real meaning
 		try:
 			vertex_trans = input_layout.parse(vertex, dp_info.input_layout_index)
 		except:
 			vertex_trans = vertex
 			unsupported_input_layout = True
-		
+		vertices.append(vertex_trans)
 		#util.assert_in_bounding_box(vertex_trans["POSITION"], mod.bounding_box[:3],
 		#							mod.bounding_box[3:])
-		
-		obj_lines.extend( dump_obj_vertices(vertex_trans) )
-
 	# assert not unsupported_input_layout, "unsupported input layout %d" % dp_info.input_layout_index
-	
-	# faces
-	obj_lines.extend( dump_obj_faces(indices) )
-	
+	# Dump
+	indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
+	util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
+	obj_lines = []
+	for vertex in vertices:
+		obj_lines.extend( dump_obj_vertices(vertex) )
+	obj_lines.extend( dump_obj_faces(indices, dp_info.index_min) )
 	res = "\n".join(obj_lines)
 	return res
 
@@ -384,24 +379,39 @@ def calc_vertex_format_size(input_layout_desc):
 		vertex_format_size += format_size
 	return vertex_format_size
 
-def dump_obj_vertices(self, vertex):
+def dump_obj_vertices(vertex):
 	obj_lines = []
-	pos = vertex_trans["POSITION"]
+	pos = vertex["POSITION"]
 	obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
-	uv = vertex_trans.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
+	uv = vertex.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
 	obj_lines.append("vt %f %f" % (uv[0], uv[1]))
-	normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
+	normal = vertex.get("NORMAL", (0.0, 0.0, 0.0))
 	obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
 	return obj_lines
 	
-def dump_obj_faces(indices):
+def dump_obj_faces(indices, base=0):
 	obj_lines = []
 	assert len(indices) % 3 == 0, "DMC4SE uses TRIANGLE_LIST as its only primtive type"
+	
+	fmt = "%d"
+	elem_count = 1
+	if DUMP_OBJ_WRITE_UV:
+		fmt += "/%d"
+		elem_count += 1
+	if DUMP_OBJ_WRITE_NORMAL:
+		if not DUMP_OBJ_WRITE_UV:
+			fmt += "/"
+		fmt += "/%d"
+		elem_count += 1
+	face_fmt = "f %s %s %s" % (fmt, fmt, fmt)
+	
 	for i in xrange(0, len(indices), 3):
-		i1 = indices[i] + 1
-		i2 = indices[i + 1] + 1
-		i3 = indices[i + 2] + 1
-		obj_lines.append("f %d/%d/%d %d/%d/%d %d/%d/%d" % (i1, i1, i1, i2, i2, i2, i3, i3, i3))
+		args = []
+		for j in xrange(3):
+			index = indices[i + j] - base + 1
+			args.extend([index] * elem_count)
+		obj_lines.append(face_fmt % tuple(args))
+		
 	return obj_lines
 		
 def run_test(root, root2, move_when_error=False):
