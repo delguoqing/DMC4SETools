@@ -441,3 +441,11 @@ def print_mat4x4(v):
 	mat[2][:] = v[8:12]
 	mat[3][:] = v[12:]
 	print numpy.matrix(mat)
+	
+def assert_min_max(_list, _min, _max):
+	assert _min == min(_list)
+	assert _max == max(_list)
+	
+def assert_in_bounding_box(point, _min, _max):
+	for i in xrange(3):
+		assert _min[i] <= point[i] <= _max[i]

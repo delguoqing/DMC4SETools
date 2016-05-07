@@ -91,10 +91,15 @@ class CDpInfo(object):
 	
 	def print_unknowns(self):
 		#print "bb_id:", self.bounding_box_id,
-		#print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
-		print "cmp_id_", map(hex, self.cmp_id),
+		print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
+		#print "cmp_id_", map(hex, self.cmp_id),
 		print "unknowns:", map(hex, self.unknowns)
 		
+	def __str__(self):
+		return "vb_offset = 0x%x, fvf_size=0x%x, fvf=0x%x, vertex_num=%d" % (
+			self.vb_offset, self.fvf_size, self.fvf, self.vertex_num
+		)
+	
 class CModel(object):
 	
 	def __init__(self):
@@ -323,17 +328,12 @@ def parse(path):
 	
 def dump_obj(mod, dp_info):
 	getter = util.get_getter(mod.vb, "<")
-	print "vb_offset = 0x%x, fvf_size=0x%x, fvf=0x%x, vertex_num=%d" % (
-		dp_info.vb_offset, dp_info.fvf_size, dp_info.fvf, dp_info.vertex_num)
+	print dp_info
 	
-	used_indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
-	min_index = min(used_indices)
-	max_index = max(used_indices)
-	assert min_index == dp_info.index_min and max_index == dp_info.index_max
+	indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
+	util.assert_min_max(indices, min_index, max_index)
 	
 	obj_lines = []
-	
-	vertices = []
 	getter.seek(dp_info.vb_offset)
 	
 	input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
@@ -343,50 +343,66 @@ def dump_obj(mod, dp_info):
 	unsupported_input_layout = False
 	for i in xrange(dp_info.index_max + 1):
 		# read vertex data using input layout
-		vertex = {}
-		for element in input_layout_desc:
-			format_size = dxgi_format_parse.get_format_size(element["Format"])
-			attri_data = getter.get_raw(format_size)
-			attri = dxgi_format_parse.parse_format(attri_data, element["Format"])
-			if element["SematicName"] not in vertex:
-				vertex[element["SematicName"]] = attri
-			else:
-				vertex[element["SematicName"] + str(element["SematicIndex"])] = attri
+		vertex = parse_vertex(getter, input_layout_desc)
+
+		# transform vertex data to its real meaning
 		try:
 			vertex_trans = input_layout.parse(vertex, dp_info.input_layout_index)
 		except:
 			vertex_trans = vertex
 			unsupported_input_layout = True
-		# transform vertex data to its real meaning
-		pos = vertex_trans["POSITION"]
-		#assert mod.min_x <= pos[0] <= mod.max_x
-		#assert mod.min_y <= pos[1] <= mod.max_y
-		#assert mod.min_z <= pos[2] <= mod.max_z
 		
-		np_pos = (pos[0] - mod.inv_world_translation[0],
-				  pos[1] - mod.inv_world_translation[1],
-				  pos[2] - mod.inv_world_translation[2],)
-		np_pos = pos
-		#print pos
-		#print np_pos[0], np_pos[1], np_pos[2]
-		obj_lines.append("v %f %f %f" % (np_pos[0], np_pos[1], np_pos[2]))
-		uv = vertex_trans.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
-		obj_lines.append("vt %f %f" % (uv[0], uv[1]))
-		normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
-		obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
+		#util.assert_in_bounding_box(vertex_trans["POSITION"], mod.bounding_box[:3],
+		#							mod.bounding_box[3:])
+		
+		obj_lines.extend( dump_obj_vertices(vertex_trans) )
 
 	# assert not unsupported_input_layout, "unsupported input layout %d" % dp_info.input_layout_index
 	
 	# faces
-	assert len(used_indices) % 3 == 0
-	for i in xrange(len(used_indices) / 3):
-		i1 = used_indices[i * 3] + 1
-		i2 = used_indices[i * 3 + 1] + 1
-		i3 = used_indices[i * 3 + 2] + 1
-		obj_lines.append("f %d/%d/%d %d/%d/%d %d/%d/%d" % (i1, i1, i1, i2, i2, i2, i3, i3, i3))
-		
+	obj_lines.extend( dump_obj_faces(indices) )
+	
 	res = "\n".join(obj_lines)
 	return res
+
+def parse_vertex(getter, input_layout_desc):
+	vertex = {}
+	for element in input_layout_desc:
+		format_size = dxgi_format_parse.get_format_size(element["Format"])
+		attri_data = getter.get_raw(format_size)
+		attri = dxgi_format_parse.parse_format(attri_data, element["Format"])
+		if element["SematicName"] not in vertex:
+			vertex[element["SematicName"]] = attri
+		else:
+			vertex[element["SematicName"] + str(element["SematicIndex"])] = attri
+	return vertex
+				
+def calc_vertex_format_size(input_layout_desc):
+	vertex_format_size = 0
+	for element in input_layout_desc:
+		format_size = dxgi_format_parse.get_format_size(element["Format"])
+		vertex_format_size += format_size
+	return vertex_format_size
+
+def dump_obj_vertices(self, vertex):
+	obj_lines = []
+	pos = vertex_trans["POSITION"]
+	obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
+	uv = vertex_trans.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
+	obj_lines.append("vt %f %f" % (uv[0], uv[1]))
+	normal = vertex_trans.get("NORMAL", (0.0, 0.0, 0.0))
+	obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
+	return obj_lines
+	
+def dump_obj_faces(indices):
+	obj_lines = []
+	assert len(indices) % 3 == 0, "DMC4SE uses TRIANGLE_LIST as its only primtive type"
+	for i in xrange(0, len(indices), 3):
+		i1 = indices[i] + 1
+		i2 = indices[i + 1] + 1
+		i3 = indices[i + 2] + 1
+		obj_lines.append("f %d/%d/%d %d/%d/%d %d/%d/%d" % (i1, i1, i1, i2, i2, i2, i3, i3, i3))
+	return obj_lines
 		
 def run_test(root, root2, move_when_error=False):
 	for model_path in glob.glob(os.path.join(root, "*.MOD")):
