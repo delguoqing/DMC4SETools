@@ -90,9 +90,9 @@ class CDpInfo(object):
 		return not self.__eq__(o)
 	
 	def print_unknowns(self):
-		#print "bb_id:", self.bounding_box_id,
-		#print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
-		print "cmp_id_", map(hex, self.cmp_id),
+		# print "bb_id:", self.bounding_box_id,
+		print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
+		# print "cmp_id_", map(hex, self.cmp_id),
 		print "unknowns:", map(hex, self.unknowns)
 		
 class CModel(object):
@@ -181,15 +181,13 @@ class CModel(object):
 		for dp_index in xrange(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
 
-			input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
-			print "input_layout_index", dp_info.input_layout_index
-			for input_element in input_layout_desc:
-				print "%s%d: %d" % (input_element["SematicName"], input_element["SematicIndex"],
-									input_element["Format"])
+			# input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
+			# print "input_layout_index", dp_info.input_layout_index
+			# for input_element in input_layout_desc:
+			# 	print "%s%d: %d" % (input_element["SematicName"], input_element["SematicIndex"],
+			# 						input_element["Format"])
 		
 			assert dp_info.bounding_box_id in self.id_2_bounding_box
-			
-			continue
 		
 			obj_str = dump_obj(self, dp_info, self.vb, self.indices)
 			fout = open("objs/dp_%d.obj" % dp_index, "w")
@@ -260,8 +258,8 @@ class CModel(object):
 		for i, cur_dp_info in enumerate(self.dp_info_list):
 			cur_dp_info.batch_id = batch_id
 			material_name = self.material_names[cur_dp_info.material_index]
-			print "\t", material_name
-			print "\t", batch_id,
+			print "\t[UseMat]:%s" % material_name
+			print "\tBatch:%d" % batch_id,
 			cur_dp_info.print_unknowns()
 			print
 			if i + 1 >= len(self.dp_info_list):
@@ -291,12 +289,15 @@ class CModel(object):
 				mat.append(mod.get("4f"))
 				print mat[-1]
 			print "==========="
-			self.n1_block_list.append(numpy.matrix([mat[0], mat[1], mat[2], mat[3]]))
+
 			vec3 = mod.get("3f")
 			reserved_2 = mod.get("I")
 			assert reserved_2 == 0
 			print "vec", vec3
 			print
+			
+			self.n1_block_list.append((numpy.matrix([mat[0], mat[1], mat[2], mat[3]]),
+									   vec1, vec2, vec3))			
 			# print "\t", data
 			
 	def read_vb(self, mod):
@@ -339,6 +340,11 @@ def dump_obj(mod, submesh_info, vb, indices):
 	input_layout_desc = input_layout_descs[str(submesh_info.input_layout_index)]
 	print "input_layout_index", submesh_info.input_layout_index
 	
+	# remap position to the correct value range
+	n1_block_index = submesh_info.n1_block_start_index
+	bb_min = mod.n1_block_list[n1_block_index][1]
+	bb_max = mod.n1_block_list[n1_block_index][2]
+	
 	# parse referrenced vertex buffer
 	unsupported_input_layout = False
 	for i in xrange(submesh_info.index_max + 1):
@@ -357,8 +363,12 @@ def dump_obj(mod, submesh_info, vb, indices):
 		except:
 			vertex_trans = vertex
 			unsupported_input_layout = True
+			
+		vertices.append(vertex_trans)
+		
 		# transform vertex data to its real meaning
 		pos = vertex_trans["POSITION"]
+		
 		#assert mod.min_x <= pos[0] <= mod.max_x
 		#assert mod.min_y <= pos[1] <= mod.max_y
 		#assert mod.min_z <= pos[2] <= mod.max_z
@@ -377,6 +387,19 @@ def dump_obj(mod, submesh_info, vb, indices):
 
 	# assert not unsupported_input_layout, "unsupported input layout %d" % submesh_info.input_layout_index
 	
+	min_x = min_y = min_z = 0x7FFFFFFF
+	max_x = max_y = max_z = -0x7FFFFFFF
+	for i in used_indices:
+		vertex = vertices[i]
+		position = vertex["POSITION"]
+		min_x = min(position[0], min_x)
+		min_y = min(position[1], min_y)
+		min_z = min(position[2], min_z)
+		max_x = max(position[0], max_x)
+		max_y = max(position[1], max_y)
+		max_z = max(position[2], max_z)
+	print "[RealMin]", min_x, min_y, min_z
+	print "[RealMax]", max_x, max_y, max_z
 	# faces
 	assert len(used_indices) % 3 == 0
 	for i in xrange(len(used_indices) / 3):
