@@ -11,6 +11,7 @@ PF_30 = 30
 PF_42 = 42
 PF_32 = 32
 PF_37 = 37
+PF_2 = 2
 
 PF_CONFIG = {
 	PF_RGBA4: {
@@ -39,7 +40,10 @@ PF_CONFIG = {
 	},
 	PF_37: {
 		"bpp": 1,
-	},					
+	},
+	PF_2: {
+		"bpp": 8,
+	},			
 }
 
 TT_2D = 2
@@ -94,28 +98,32 @@ def parse(path):
 		
 	# offset of each mip map level of each side
 	texture_offsets = getter.get("%dI" % (side_count * mip_level), force_tuple=True)
+	
 	if texture_type == TT_2D:
-		# Simply reads all data from the `texture_offsets[0]` to file end.
-		# As we are exporting textures, we just need the first mip0
-		start_offset = texture_offsets[0]
-		if len(texture_offsets) >= 2:
-			end_offset = texture_offsets[1]
+		assert depth == 1
+	if texture_type == TT_CUBE:
+		assert side_count == 6
+	else:
+		assert side_count == 1
+		
+	# Simply reads all data from the `texture_offsets[0]` to file end.
+	# As we are exporting textures, we just need the first mip0
+	for side_idx in xrange(side_count):
+		offset_idx = side_idx * mip_level
+		start_offset = texture_offsets[offset_idx]
+		if len(texture_offsets) > offset_idx + 1:
+			end_offset = texture_offsets[offset_idx + 1]
 		else:
 			end_offset = getter.size
 		size = end_offset - start_offset
-		# print "texture(mip0) offset = 0x%x - 0x%x" % (start_offset, end_offset)
+		pixel_count = width * height * depth
+		print "texture(mip0) offset = 0x%x - 0x%x" % (start_offset, end_offset)
 		print "texture(mip0) size = 0x%x" % size
 		assert (pixel_format in PF_CONFIG), \
 				"unknown pixel format = %d, bpp = %f" % (pixel_format,
-														 size / (width * height * 1.0))
-		cal_size = int(width * height * PF_CONFIG[pixel_format]["bpp"])
-		assert size == cal_size, "bpp is not correct"
-	elif texture_type == TT_VOLUME:
-		pass
-	elif texture_type == TT_CUBE:
-		assert side_count == 6, "it's a cube map!"
-	else:
-		print >>sys.stderr, "unsupported texture type %d" % texture_type
+														 size / float(pixel_count))
+		calc_size = int(pixel_count * PF_CONFIG[pixel_format]["bpp"])
+		assert size == calc_size, "bpp is not correct"
 		
 	f.close()
 	
