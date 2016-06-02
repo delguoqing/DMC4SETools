@@ -6,3 +6,4 @@ src/log.txt
 src/shader/tmp/*.txt
 *.ps
 *.vs
+src/err.txt

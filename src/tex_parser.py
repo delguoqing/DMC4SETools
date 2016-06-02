@@ -2,6 +2,61 @@ import os
 import sys
 import util
 
+PF_RGBA4 = 7
+PF_23 = 23
+PF_25 = 25
+PF_31 = 31
+PF_19 = 19
+PF_30 = 30
+PF_42 = 42
+PF_32 = 32
+PF_37 = 37
+
+PF_CONFIG = {
+	PF_RGBA4: {
+		"bpp": 4,
+	},
+	PF_23: {
+		"bpp": 1,
+	},
+	PF_25: {
+		"bpp": 0.5,
+	},
+	PF_31: {
+		"bpp": 1,
+	},
+	PF_19: {
+		"bpp": 0.5,
+	},
+	PF_30: {
+		"bpp": 0.5,
+	},
+	PF_42: {
+		"bpp": 1,
+	},
+	PF_32: {
+		"bpp": 1,
+	},
+	PF_37: {
+		"bpp": 1,
+	},					
+}
+
+TT_2D = 2
+TT_VOLUME = 3
+TT_CUBE = 6
+
+TT_CONFIG = {
+	TT_2D: {
+		
+	},
+	TT_VOLUME: {
+		
+	},		
+	TT_CUBE: {
+		
+	},
+}
 def parse(path):
 	f = open(path, "rb")
 	getter = util.get_getter(f, "<")
@@ -14,33 +69,72 @@ def parse(path):
 	assert check_code == 0x9E or check_code == 0x809E
 	unkown0 = (field_4 >> 16) & 0xFF
 	reso_pow = (field_4 >> 24) & 0xF
-	unknown1 = (field_4 >> 28) & 0xF	# texture type?
+	texture_type = (field_4 >> 28) & 0xF	# texture type
 	
 	field_8 = getter.get("I")
 	mip_level = (field_8 & 0x3F)
-	width = (field_8 >> 6) & 0x1FFFF
-	height = (field_8 >> 19) & 0x1FFFF
+	width = (field_8 >> 6) & 0x1FFF
+	height = (field_8 >> 19) & 0x1FFF
 	
 	field_C = getter.get("I")
-	unknown3 = field_C & 0xFF
-	unknown4 = (field_C >> 8) & 0xFF
-	depth = (field_C >> 16) & 0x1FFFF
+	side_count = field_C & 0xFF		# for cube map
+	pixel_format = (field_C >> 8) & 0xFF
+	depth = (field_C >> 16) & 0x1FFF
 	unknown5 = (field_C >> 29) & 0x7
 		
-	print "high reso scale = %d" % (1 << reso_pow)
+	# print "high reso scale = %d" % (1 << reso_pow)
+	assert reso_pow == 0, "uncomment print if assert failed"
 	print "texture dimension = (%d, %d, %d)" % (width, height, depth)
 	print "mipmap level count = %d" % mip_level
+	# print "texture type = %d" % texture_type
+	print "unknowns", unkown0, unknown5
 	
-	if unknown1 == 6:
+	if texture_type == TT_CUBE:
 		getter.skip(0x6c)
 		
-	# offset of each mip map level
-	# unknown3: used by cube map? where each mip level contains serveral texture
-	unknown6 = getter.block(unknown3 * mip_level * 4)
-	
-	texture_type = unknown1 - 1
-	
+	# offset of each mip map level of each side
+	texture_offsets = getter.get("%dI" % (side_count * mip_level), force_tuple=True)
+	if texture_type == TT_2D:
+		# Simply reads all data from the `texture_offsets[0]` to file end.
+		# As we are exporting textures, we just need the first mip0
+		start_offset = texture_offsets[0]
+		if len(texture_offsets) >= 2:
+			end_offset = texture_offsets[1]
+		else:
+			end_offset = getter.size
+		size = end_offset - start_offset
+		# print "texture(mip0) offset = 0x%x - 0x%x" % (start_offset, end_offset)
+		print "texture(mip0) size = 0x%x" % size
+		assert (pixel_format in PF_CONFIG), \
+				"unknown pixel format = %d, bpp = %f" % (pixel_format,
+														 size / (width * height * 1.0))
+		cal_size = int(width * height * PF_CONFIG[pixel_format]["bpp"])
+		assert size == cal_size, "bpp is not correct"
+	elif texture_type == TT_VOLUME:
+		pass
+	elif texture_type == TT_CUBE:
+		assert side_count == 6, "it's a cube map!"
+	else:
+		print >>sys.stderr, "unsupported texture type %d" % texture_type
+		
 	f.close()
 	
+def test_all(test_count=-1):
+	ROM_ROOT = os.path.join(os.environ["DMC4SE_DATA_DIR"], "rom")
+	for top, dirs, files in os.walk(ROM_ROOT):
+		for fname in files:
+			if fname.endswith(".TEX"):
+				print "-" * 30
+				# print "parsing", fname
+				print "fullpath", os.path.join(top, fname)
+				parse(os.path.join(top, fname))
+				if test_count > 0:
+					test_count -= 1
+					if test_count <= 0:
+						return
+				
 if __name__ == '__main__':
-	parse(sys.argv[1])
+	if len(sys.argv) > 1:
+		parse(sys.argv[1])
+	else:
+		test_all()
