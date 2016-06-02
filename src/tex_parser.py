@@ -3,22 +3,30 @@ import sys
 import util
 
 PF_RGBA4 = 7
-PF_23 = 23
+PF_DXT3 = 23
 PF_25 = 25
 PF_31 = 31
-PF_19 = 19
-PF_30 = 30
+PF_DXT1C = 19
+PF_DXT1A = 30
 PF_42 = 42
 PF_32 = 32
 PF_37 = 37
 PF_2 = 2
 
+def interpret_R8(data):
+	ret = ""
+	for byte in data:
+		ret += byte
+		ret += "\x00\x00\xFF"
+	return ret
+
 PF_CONFIG = {
 	PF_RGBA4: {
 		"bpp": 4,
 	},
-	PF_23: {
+	PF_DXT3: {
 		"bpp": 1,
+		"interpret": interpret_R8,
 	},
 	PF_25: {
 		"bpp": 0.5,
@@ -26,10 +34,10 @@ PF_CONFIG = {
 	PF_31: {
 		"bpp": 1,
 	},
-	PF_19: {
+	PF_DXT1C: {
 		"bpp": 0.5,
 	},
-	PF_30: {
+	PF_DXT1A: {
 		"bpp": 0.5,
 	},
 	PF_42: {
@@ -87,11 +95,13 @@ def parse(path):
 	unknown5 = (field_C >> 29) & 0x7
 		
 	# print "high reso scale = %d" % (1 << reso_pow)
-	assert reso_pow == 0, "uncomment print if assert failed"
+	assert reso_pow == 0, "seems like reserved fields"
 	print "texture dimension = (%d, %d, %d)" % (width, height, depth)
 	print "mipmap level count = %d" % mip_level
+	print "pixel format = %d, bpp = %f" % (pixel_format, PF_CONFIG[pixel_format]["bpp"])
 	# print "texture type = %d" % texture_type
-	print "unknowns", unkown0, unknown5
+	# print "unknowns", unkown0, unknown5
+	assert unkown0 == 0 and unknown5 == 0, "seems like reserved fields"
 	
 	if texture_type == TT_CUBE:
 		getter.skip(0x6c)
@@ -115,6 +125,7 @@ def parse(path):
 	# ...
 	# sideM_mip0, sideM_mip1, ..., sideM_mipN
 	
+	texel_data_list = []
 	for side_idx in xrange(side_count):
 		offset_idx = side_idx * mip_level
 		start_offset = texture_offsets[offset_idx]
@@ -132,7 +143,60 @@ def parse(path):
 		calc_size = int(pixel_count * PF_CONFIG[pixel_format]["bpp"])
 		assert size == calc_size, "bpp is not correct"
 		
+		getter.seek(start_offset)
+		texel_data = getter.get_raw(size)
+		texel_data_list.append(texel_data)
+	
+	output_name_base = os.path.splitext(f.name)[0]
+	# export
+	if texture_type == TT_2D:
+		data = texel_data_list[0]
+		if pixel_format == PF_DXT1A or pixel_format == PF_DXT1C:
+			save_dxt1(data, width, height, output_name_base + ".dds")
+		elif pixel_format == PF_DXT3:
+			save_dxt3(data, width, height, output_name_base + ".dds")
+		elif pixel_format == PF_42:
+			save_dxt3(data, width, height, output_name_base + ".dds")
+			# print >>sys.stderr, "PF_42 %s" % f.name
+		elif pixel_format == PF_32 or pixel_format == PF_37:
+			save_dxt3(data, width, height, output_name_base + ".dds")
+			# print >>sys.stderr, "PF_32 %s" % f.name
+		elif pixel_format == PF_RGBA4:
+			save_texture_2D(data, width, height, output_name_base + ".png")
+		elif pixel_format == PF_25:	# may be dxt1n
+			print >>sys.stderr, "PF_25 DXT1 %s" % f.name
+			save_dxt1(data, width, height, output_name_base + ".dds")
+		# used mostly by normal maps, must be some specific compression method
+		elif pixel_format == PF_31:
+			save_dxt5(data, width, height, output_name_base + ".dds")
+			print >>sys.stderr, "PF_31 DXT5 %s" % f.name
+		else:
+			assert False, "unsupported pixel format"
+	
 	f.close()
+	
+def save_texture_2D(data, width, height, fname):
+	from PIL import Image
+	image = Image.frombuffer("RGBA", (width, height), data)
+	image.save(fname)
+
+def save_dxt1(data, width, height, fname):
+	header = util.gen_dxt1_header(width, height)
+	fout = open(fname, "wb")
+	fout.write(header + data)
+	fout.close()
+	
+def save_dxt3(data, width, height, fname):
+	header = util.gen_dxt3_header(width, height)
+	fout = open(fname, "wb")
+	fout.write(header + data)
+	fout.close()
+
+def save_dxt5(data, width, height, fname):
+	header = util.gen_dxt5_header(width, height)
+	fout = open(fname, "wb")
+	fout.write(header + data)
+	fout.close()
 	
 def test_all(test_count=-1):
 	ROM_ROOT = os.path.join(os.environ["DMC4SE_DATA_DIR"], "rom")
