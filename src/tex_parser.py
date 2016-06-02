@@ -108,6 +108,13 @@ def parse(path):
 		
 	# Simply reads all data from the `texture_offsets[0]` to file end.
 	# As we are exporting textures, we just need the first mip0
+	
+	# texture offsets layout
+	# side0_mip0, side0_mip1, ..., side0_mipN
+	# side1_mip0, side1_mip1, ..., side1_mipN,
+	# ...
+	# sideM_mip0, sideM_mip1, ..., sideM_mipN
+	
 	for side_idx in xrange(side_count):
 		offset_idx = side_idx * mip_level
 		start_offset = texture_offsets[offset_idx]
