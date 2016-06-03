@@ -1,13 +1,14 @@
 import os
 import sys
 import util
+from d3d10.dxgi_format import *
 
-PF_RGBA4 = 7
-PF_DXT3 = 23
+PF_7 = 7
+PF_23 = 23
 PF_25 = 25
 PF_31 = 31
-PF_DXT1C = 19
-PF_DXT1A = 30
+PF_19 = 19
+PF_30 = 30
 PF_42 = 42
 PF_32 = 32
 PF_37 = 37
@@ -20,37 +21,48 @@ def interpret_R8(data):
 		ret += "\x00\x00\xFF"
 	return ret
 
+# In fact, these are not pixel format
+# dump 0xfaa41e to get the LUT 'pf_2_dxgi'
 PF_CONFIG = {
-	PF_RGBA4: {
+	PF_7: {
 		"bpp": 4,
+		"DXGI": DXGI_FORMAT_R8G8B8A8_UNORM,
 	},
-	PF_DXT3: {
+	PF_23: {
 		"bpp": 1,
-		"interpret": interpret_R8,
+		"DXGI": DXGI_FORMAT_BC3_UNORM,
 	},
 	PF_25: {
 		"bpp": 0.5,
+		"DXGI": DXGI_FORMAT_BC4_UNORM,
 	},
 	PF_31: {
 		"bpp": 1,
+		"DXGI": DXGI_FORMAT_BC5_SNORM,
 	},
-	PF_DXT1C: {
+	PF_19: {
 		"bpp": 0.5,
+		"DXGI": DXGI_FORMAT_BC1_UNORM,
 	},
-	PF_DXT1A: {
+	PF_30: {
 		"bpp": 0.5,
+		"DXGI": DXGI_FORMAT_BC1_UNORM,
 	},
 	PF_42: {
 		"bpp": 1,
+		"DXGI": DXGI_FORMAT_BC3_UNORM,
 	},
 	PF_32: {
 		"bpp": 1,
+		"DXGI": DXGI_FORMAT_BC3_UNORM,
 	},
 	PF_37: {
 		"bpp": 1,
+		"DXGI": DXGI_FORMAT_BC3_UNORM,
 	},
 	PF_2: {
 		"bpp": 8,
+		"DXGI": DXGI_FORMAT_R16G16B16A16_FLOAT,
 	},			
 }
 
@@ -151,27 +163,20 @@ def parse(path):
 	# export
 	if texture_type == TT_2D:
 		data = texel_data_list[0]
-		if pixel_format == PF_DXT1A or pixel_format == PF_DXT1C:
-			save_dxt1(data, width, height, output_name_base + ".dds")
-		elif pixel_format == PF_DXT3:
-			save_dxt3(data, width, height, output_name_base + ".dds")
-		elif pixel_format == PF_42:
-			save_dxt3(data, width, height, output_name_base + ".dds")
-			# print >>sys.stderr, "PF_42 %s" % f.name
-		elif pixel_format == PF_32 or pixel_format == PF_37:
-			save_dxt3(data, width, height, output_name_base + ".dds")
-			# print >>sys.stderr, "PF_32 %s" % f.name
-		elif pixel_format == PF_RGBA4:
+		dxgi = PF_CONFIG[pixel_format]["DXGI"]
+		if dxgi == DXGI_FORMAT_R8G8B8A8_UNORM:
 			save_texture_2D(data, width, height, output_name_base + ".png")
-		elif pixel_format == PF_25:	# may be dxt1n
-			print >>sys.stderr, "PF_25 DXT1 %s" % f.name
+		elif dxgi == DXGI_FORMAT_BC1_UNORM:
 			save_dxt1(data, width, height, output_name_base + ".dds")
-		# used mostly by normal maps, must be some specific compression method
-		elif pixel_format == PF_31:
+		elif dxgi == DXGI_FORMAT_BC3_UNORM:
+			save_dxt3(data, width, height, output_name_base + ".dds")
+		elif dxgi == DXGI_FORMAT_BC4_UNORM:
+			save_dxt4(data, width, height, output_name_base + ".dds")
+		# most probably used by normal map to take advantages of the `SNORM` part
+		elif dxgi == DXGI_FORMAT_BC5_SNORM:
 			save_dxt5(data, width, height, output_name_base + ".dds")
-			print >>sys.stderr, "PF_31 DXT5 %s" % f.name
 		else:
-			assert False, "unsupported pixel format"
+			assert False, "unsupported dxgi format %d" % dxgi
 	
 	f.close()
 	
@@ -192,6 +197,12 @@ def save_dxt3(data, width, height, fname):
 	fout.write(header + data)
 	fout.close()
 
+def save_dxt4(data, width, height, fname):
+	header = util.gen_dxt4_header(width, height)
+	fout = open(fname, "wb")
+	fout.write(header + data)
+	fout.close()
+	
 def save_dxt5(data, width, height, fname):
 	header = util.gen_dxt5_header(width, height)
 	fout = open(fname, "wb")
@@ -204,8 +215,8 @@ def test_all(test_count=-1):
 		for fname in files:
 			if fname.endswith(".TEX"):
 				print "-" * 30
-				# print "parsing", fname
-				print "fullpath", os.path.join(top, fname)
+				print "parsing", fname
+				# print "fullpath", os.path.join(top, fname)
 				parse(os.path.join(top, fname))
 				if test_count > 0:
 					test_count -= 1
