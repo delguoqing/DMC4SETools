@@ -1,5 +1,6 @@
 import os
 import sys
+import struct
 import util
 from d3d10.dxgi_format import *
 
@@ -13,13 +14,6 @@ PF_42 = 42
 PF_32 = 32
 PF_37 = 37
 PF_2 = 2
-
-def interpret_R8(data):
-	ret = ""
-	for byte in data:
-		ret += byte
-		ret += "\x00\x00\xFF"
-	return ret
 
 # In fact, these are not pixel format
 # dump 0xfaa41e to get the LUT 'pf_2_dxgi'
@@ -169,12 +163,16 @@ def parse(path):
 		elif dxgi == DXGI_FORMAT_BC1_UNORM:
 			save_dxt1(data, width, height, output_name_base + ".dds")
 		elif dxgi == DXGI_FORMAT_BC3_UNORM:
-			save_dxt3(data, width, height, output_name_base + ".dds")
+			save_dxt5(data, width, height, output_name_base + ".dds")
 		elif dxgi == DXGI_FORMAT_BC4_UNORM:
-			save_dxt4(data, width, height, output_name_base + ".dds")
+			if os.path.exists(output_name_base + ".dds"):
+				os.remove(output_name_base + ".dds")
+			save_bc4(data, width, height, output_name_base + ".png")
 		# most probably used by normal map to take advantages of the `SNORM` part
 		elif dxgi == DXGI_FORMAT_BC5_SNORM:
-			save_dxt5(data, width, height, output_name_base + ".dds")
+			if os.path.exists(output_name_base + ".dds"):
+				os.remove(output_name_base + ".dds")			
+			save_bc5(data, width, height, output_name_base + ".png")
 		else:
 			assert False, "unsupported dxgi format %d" % dxgi
 	
@@ -183,22 +181,10 @@ def parse(path):
 def save_texture_2D(data, width, height, fname):
 	from PIL import Image
 	image = Image.frombuffer("RGBA", (width, height), data)
-	image.save(fname)
+	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
 
 def save_dxt1(data, width, height, fname):
 	header = util.gen_dxt1_header(width, height)
-	fout = open(fname, "wb")
-	fout.write(header + data)
-	fout.close()
-	
-def save_dxt3(data, width, height, fname):
-	header = util.gen_dxt3_header(width, height)
-	fout = open(fname, "wb")
-	fout.write(header + data)
-	fout.close()
-
-def save_dxt4(data, width, height, fname):
-	header = util.gen_dxt4_header(width, height)
 	fout = open(fname, "wb")
 	fout.write(header + data)
 	fout.close()
@@ -208,6 +194,82 @@ def save_dxt5(data, width, height, fname):
 	fout = open(fname, "wb")
 	fout.write(header + data)
 	fout.close()
+	
+def _bc5_extract_component(d):
+	red_0 = ord(d[0])
+	red_1 = ord(d[1])
+	lut = [red_0, red_1, ]
+	if red_0 > red_1: # 6 interpolated color values
+		lut.append((6*red_0 + 1*red_1)/7.0)
+		lut.append((5*red_0 + 2*red_1)/7.0)
+		lut.append((4*red_0 + 3*red_1)/7.0)
+		lut.append((3*red_0 + 4*red_1)/7.0)
+		lut.append((2*red_0 + 5*red_1)/7.0)
+		lut.append((1*red_0 + 6*red_1)/7.0)
+	else:	# 4 interpolated color values
+		lut.append((4*red_0 + 1*red_1)/5.0)
+		lut.append((3*red_0 + 2*red_1)/5.0)
+		lut.append((2*red_0 + 3*red_1)/5.0)
+		lut.append((1*red_0 + 4*red_1)/5.0)
+		lut.append(0)
+		lut.append(255)
+	ret = []
+	v = struct.unpack(">Q", d)[0]
+	for bit in xrange(47, -1, -3):
+		cidx = (v >> (bit - 2)) & 0b111
+		ret.append(lut[cidx])
+	return ret
+	
+def save_bc5(data, width, height, fname):
+	pixel_count = width * height
+	ret = [None] * pixel_count
+	x_nblock = width / 4
+	for block_idx in xrange(len(data) / 16):
+		# red component
+		d = data[16 * block_idx: 16 * block_idx + 8]
+		red = _bc5_extract_component(d)
+		# green component
+		d = data[16 * block_idx + 8: 16 * block_idx + 16]
+		green = _bc5_extract_component(d)
+		
+		y_start = block_idx / x_nblock
+		x_start = block_idx - x_nblock * y_start
+		x_start *= 4
+		y_start *= 4
+		for i in xrange(16):
+			y = i / 4
+			x = i - y * 4
+			ret[x_start + x + (y_start + y) * width] = (red[i], green[i])
+	buff = ""
+	for r, g in ret:
+		buff += chr(int(r)) + chr(int(g)) + "\x00"
+	from PIL import Image
+	image = Image.frombuffer("RGB", (width, height), buff)
+	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
+
+def save_bc4(data, width, height, fname):
+	pixel_count = width * height
+	ret = [None] * pixel_count
+	x_nblock = width / 4
+	for block_idx in xrange(len(data) / 8):
+		# red component
+		d = data[8 * block_idx: 8 * block_idx + 8]
+		red = _bc5_extract_component(d)
+		
+		y_start = block_idx / x_nblock
+		x_start = block_idx - x_nblock * y_start
+		x_start *= 4
+		y_start *= 4
+		for i in xrange(16):
+			y = i / 4
+			x = i - y * 4
+			ret[x_start + x + (y_start + y) * width] = (red[i], )
+	buff = ""
+	for r, in ret:
+		buff += chr(int(r))
+	from PIL import Image
+	image = Image.frombuffer("L", (width, height), buff)
+	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
 	
 def test_all(test_count=-1):
 	ROM_ROOT = os.path.join(os.environ["DMC4SE_DATA_DIR"], "rom")
