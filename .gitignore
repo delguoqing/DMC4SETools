@@ -7,3 +7,4 @@ src/shader/tmp/*.txt
 *.ps
 *.vs
 src/err.txt
+src/mfx_log.txt

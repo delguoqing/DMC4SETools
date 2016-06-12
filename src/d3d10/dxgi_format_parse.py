@@ -6,7 +6,7 @@ ENDIAN = "<"
 
 def get_format_size(fmt):
 	size = {
-		DXGI_FORMAT_R32G32B32_FLOAT: 0Xc,
+		DXGI_FORMAT_R32G32B32_FLOAT: 0xc,
 		DXGI_FORMAT_R16G16B16A16_SNORM: 0x8,
 		DXGI_FORMAT_R10G10B10A2_UNORM: 0x4,
 		DXGI_FORMAT_R16G16_FLOAT: 0x4,
@@ -28,8 +28,7 @@ def parse_format(data, fmt):
 	elif fmt == DXGI_FORMAT_R32G32B32_FLOAT:
 		return (_parse_float(data[0:4]),
 				_parse_float(data[4:8]),
-				_parse_float(data[8:0xc]),
-				1.0)
+				_parse_float(data[8:0xc]))
 	elif fmt == DXGI_FORMAT_R10G10B10A2_UNORM:
 		v = struct.unpack(ENDIAN + "I", data)[0]
 		return (

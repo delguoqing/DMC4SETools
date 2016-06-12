@@ -1,6 +1,7 @@
 import os
 import sys
 import struct
+import json
 import util
 from d3d10.dxgi_format import *
 	
@@ -35,6 +36,7 @@ class CMfxHeader(object):
 class CMfxEntry(object):
 	
 	def read(self, getter, string_table):
+		self.input_layout = []
 		str_offset = getter.get("I")
 		str_offset2 = getter.get("I")
 		string = string_table.get_string(str_offset)
@@ -50,14 +52,48 @@ class CMfxEntry(object):
 		# parse an entry according to different types
 		if field_8_a == 9:
 			field_18 = getter.get("H")
+			print "attribute count", field_18
 			getter.skip(2 + 4)
+			size = 0
+			max_size = 0
 			for i in xrange(field_18):
 				_str_offset = getter.get("I")
 				string = string_table.get_string(_str_offset)
-				print string, hex(getter.get("I"))
+				v = getter.get("I")
+				comp_type = (v >> 6) & 0x1F	# component type
+				comp_count = (v >> 11) & 0x7F	# component count?
+				base_off = (v >> 22) & 0x1FF
+				instancing = (v >> 31) & 0x1
+				index = v & 0x3F	# e.g. suffix in TexcoordN
+				# 0xe: Color
+				# 0xb: Normal
+				# 0xc: ?
+				if comp_type in (0xe, 0xb, 0xc):
+					size = 4
+				else:
+					size = comp_count * (0, 4, 2, 2, 2, 2, 2, 1, 1, 1, 1, 4, 4, 1, 4)[comp_type]
+				max_size = max(max_size, base_off + size)
+				print "name:%s, type:0x%x, count:%d, off=0x%x, size:0x%x, instancing:%d, index:%d" % (
+					string, comp_type, comp_count, base_off, size, instancing, index,
+				)
+				
+				# dump input layout
+				self.input_layout.append({
+					"sematics": string,
+					"offset": base_off,
+					"component_count": comp_count,
+				})
+				assert comp_type != 0xc
+				if comp_type in (0xb, 0xe):
+					self.input_layout[-1]["component_count"] = 4
+				if index != 0:
+					self.input_layout[-1]["sematics"] += str(index)
+					
+			print "total size", max_size
+					
 		elif field_8_a == 7:
 			field_18 = getter.get("H")
-		elif field_8_a == 2:
+		elif field_8_a == 2:	# kind of function
 			pass
 		elif field_8_a == 0:
 			pass
@@ -86,6 +122,15 @@ def parse(path):
 		mfx_entries.append(mfx_entry)
 		
 	f.close()
+	
+	fout = open("windbg/input_layouts2.json", "w")
+	input_layouts = [{}]
+	for mfx_entry in mfx_entries:
+		input_layouts.append(mfx_entry.input_layout)
+	while input_layouts and not input_layouts[-1]:
+		input_layouts.pop(-1)
+	json.dump(input_layouts, fout, indent=2)
+	fout.close()
 				
 if __name__ == '__main__':
 	parse(sys.argv[1])

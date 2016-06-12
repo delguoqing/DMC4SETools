@@ -11,12 +11,12 @@ import input_layout
 
 from d3d10 import dxgi_format_parse
 
-DUMP_OBJ_WRITE_NORMAL = False
-DUMP_OBJ_WRITE_UV = False
+DUMP_OBJ = True
+DUMP_OBJ_WRITE_NORMAL = True
+DUMP_OBJ_WRITE_UV = True
 
-f = open("windbg/input_layouts.json", "r")
-input_layout_descs = json.load(f)
-f.close()
+IA_D3D10 = None
+IA_GAME = None
 
 class CDpInfo(object):
 	def __init__(self, n1_block_start_index):
@@ -198,9 +198,10 @@ class CModel(object):
 			assert dp_info.bounding_box_id in self.id_2_bounding_box
 		
 			obj_str = dump_obj(self, dp_info)
-			fout = open("objs/dp_%d.obj" % dp_index, "w")
-			fout.write(obj_str)
-			fout.close()
+			if DUMP_OBJ:
+				fout = open("objs/dp_%d.obj" % dp_index, "w")
+				fout.write(obj_str)
+				fout.close()
 
 	def read_bone(self, mod):
 		if self.bone_num <= 0:
@@ -322,6 +323,8 @@ class CModel(object):
 		assert n7 == 0
 	
 def parse(path):
+	load_input_layouts("windbg/input_layouts.json", "windbg/input_layouts2.json")
+	
 	f = open(path, "rb")
 	getter = util.get_getter(f, "<")
 	
@@ -332,7 +335,8 @@ def parse(path):
 	
 def dump_obj(mod, dp_info):
 	print dp_info
-	input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
+	IA_d3d10 = IA_D3D10[str(dp_info.input_layout_index)]
+	IA_game = IA_GAME[dp_info.input_layout_index]
 	print "input_layout_index", dp_info.input_layout_index
 	
 	# Parse
@@ -344,23 +348,18 @@ def dump_obj(mod, dp_info):
 	bb_max = mod.n1_block_list[n1_block_index][2]
 	
 	# parse referrenced vertex buffer
-	vertex_format_size = calc_vertex_format_size(input_layout_desc)	
+	vertex_format_size = calc_vertex_format_size(IA_d3d10)	
 	getter = util.get_getter(mod.vb, "<")
 	getter.seek(dp_info.vb_offset + vertex_format_size * dp_info.index_min)
-	unsupported_input_layout = False
 	for i in xrange(dp_info.index_min, dp_info.index_max + 1, 1):
-		vertex = parse_vertex(getter, input_layout_desc)
-		# transform vertex data to its real meaning
-		try:
-			vertex_trans = input_layout.parse(vertex, dp_info.input_layout_index)
-		except:
-			vertex_trans = vertex
-			unsupported_input_layout = True
-		vertices.append(vertex_trans)
-		#util.assert_in_bounding_box(vertex_trans["POSITION"], mod.bounding_box[:3],
-		#							mod.bounding_box[3:])
-	# assert not unsupported_input_layout, "unsupported input layout %d" % dp_info.input_layout_index
+		vertex = parse_vertex(getter, IA_d3d10, IA_game)
+		vertices.append(vertex)
+		for k, v in sorted(vertex.iteritems()):
+			print k, v
+		print "-" * 10
 	# Dump
+	if not DUMP_OBJ:
+		return ""
 	indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
 	util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
 	obj_lines = []
@@ -370,32 +369,47 @@ def dump_obj(mod, dp_info):
 	res = "\n".join(obj_lines)
 	return res
 
-def parse_vertex(getter, input_layout_desc):
-	vertex = {}
-	for element in input_layout_desc:
+def parse_vertex(getter, IA_d3d10, IA_game):
+	offset_attri_list = []
+	offset = 0
+	for element in IA_d3d10:
 		format_size = dxgi_format_parse.get_format_size(element["Format"])
 		attri_data = getter.get_raw(format_size)
 		attri = dxgi_format_parse.parse_format(attri_data, element["Format"])
-		if element["SematicName"] not in vertex:
-			vertex[element["SematicName"]] = attri
-		else:
-			vertex[element["SematicName"] + str(element["SematicIndex"])] = attri
+		offset_attri_list.append((offset, offset + format_size, attri))
+		offset += format_size
+	vertex = {}
+	for config in IA_game:
+		v = vertex.setdefault(config["sematics"], [])
+		fetch_next = False
+		fetch_index = 0
+		total = config["component_count"] + len(v)
+		for offset_beg, offset_end, attri in offset_attri_list:
+			if not (offset_beg <= config["offset"] < offset_end):
+				continue
+			if not fetch_next:
+				unit_size = (offset_end - offset_beg) / len(attri)
+				fetch_index = (config["offset"] - offset_beg) / unit_size
+				fetch_next = True
+			to_fetch_count = total - len(v)
+			v.extend(attri[fetch_index: fetch_index + to_fetch_count])
+			fetch_index = 0
 	return vertex
 				
-def calc_vertex_format_size(input_layout_desc):
+def calc_vertex_format_size(IA_d3d10):
 	vertex_format_size = 0
-	for element in input_layout_desc:
+	for element in IA_d3d10:
 		format_size = dxgi_format_parse.get_format_size(element["Format"])
 		vertex_format_size += format_size
 	return vertex_format_size
 
 def dump_obj_vertices(vertex):
 	obj_lines = []
-	pos = vertex["POSITION"]
+	pos = vertex["Position"]
 	obj_lines.append("v %f %f %f" % (pos[0], pos[1], pos[2]))
-	uv = vertex.get("TEXCOORD", (0.0, 0.0, 0.0, 1.0))
+	uv = vertex.get("TexCoord", (0.0, 0.0, 0.0, 1.0))
 	obj_lines.append("vt %f %f" % (uv[0], uv[1]))
-	normal = vertex.get("NORMAL", (0.0, 0.0, 0.0))
+	normal = vertex.get("Normal", (0.0, 0.0, 0.0))
 	obj_lines.append("vn %f %f %f" % (normal[0], normal[1], normal[2]))
 	return obj_lines
 
@@ -457,6 +471,18 @@ def verify_sematic_order(input_layout_descs):
 			return False
 	return True
 			
+def load_json_object(path):
+	f = open(path, "r")
+	py_obj = json.load(f)
+	f.close()
+	return py_obj
+
+def load_input_layouts(d3d10_json, game_json):
+	global IA_D3D10
+	global IA_GAME
+	IA_D3D10 = load_json_object(d3d10_json)
+	IA_GAME = load_json_object(game_json)
+	
 if __name__ == '__main__':
 	# assert verify_sematic_order(input_layout_descs), "sematic name should be in the same order"
 	
