@@ -386,7 +386,7 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 		fetch_index = 0
 		total = config["component_count"] + len(v)
 		for offset_beg, offset_end, attri, attri_int in offset_attri_list:
-			if not (offset_beg <= config["offset"] < offset_end):
+			if not (fetch_next or offset_beg <= config["offset"] < offset_end):
 				continue
 			if not fetch_next:
 				unit_size = (offset_end - offset_beg) / len(attri)
@@ -398,6 +398,8 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 			else:
 				v.extend(attri[fetch_index: fetch_index + to_fetch_count])
 			fetch_index = 0
+			fetch_next = (len(v) < total)
+			
 	return vertex
 				
 def calc_vertex_format_size(IA_d3d10):
