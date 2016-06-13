@@ -148,11 +148,11 @@ class CModel(object):
 		
 		# 0x40 ~ 0x80
 		# floating point block
-		self.inv_world_translation = header.get("3f", offset=0x40)	# ?
+		self.bounding_center = header.get("3f", offset=0x40)
 		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
 		self.base_y = self.world_scale_factor #?
-		print "inv_world_translation:", self.inv_world_translation
 		print "world_scale_factor:", self.world_scale_factor
+		print
 		
 		# bounding box
 		self.min_x = header.get("f", offset=0x50)
@@ -168,6 +168,8 @@ class CModel(object):
 		self.bounding_box = (self.min_x, self.min_y, self.min_z, \
 							 self.max_x, self.max_y, self.max_z)
 		print "bounding box: (%f, %f, %f) - (%f, %f, %f)" % self.bounding_box
+		print "bounding center:", self.bounding_center
+		print
 		# 0x70 ~ 0x80
 		# not used
 		
@@ -267,7 +269,7 @@ class CModel(object):
 		# to get the correct binding pose.
 		# Luckily the `normalize matrix` is 'baked' in the `bone offset matrix`.
 		# We can calculate the invert normalize matrix as below
-		self.inv_norm_mat = bone_offset_mat[root_index] * bone_mat[root_index].I
+		self.inv_norm_mat = bone_offset_mat[root_index] * bone_mat[root_index]
 		print "Invert normalize matrix:"
 		print self.inv_norm_mat
 		
@@ -375,6 +377,30 @@ def parse(path):
 		
 	f.close()
 	
+	print_bounding_box_check(model)
+	
+def print_bounding_box_check(model):
+	print "-" * 30
+	calc_min_x = min(used_x)
+	calc_max_x = max(used_x)
+	calc_min_y = min(used_y)
+	calc_max_y = max(used_y)
+	calc_min_z = min(used_z)
+	calc_max_z = max(used_z)	
+	print "X Range [%f, %f]" % (calc_min_x, calc_max_x)
+	print "Y Range [%f, %f]" % (calc_min_y, calc_max_y)
+	print "Z Range [%f, %f]" % (calc_min_z, calc_max_z)
+	# A very rough calculation
+	assert abs(calc_min_x - model.min_x) < 1
+	assert abs(calc_min_y - model.min_y) < 1
+	assert abs(calc_min_z - model.min_z) < 1
+	assert abs(calc_max_x - model.max_x) < 1
+	assert abs(calc_max_y - model.max_y) < 1
+	assert abs(calc_max_z - model.max_z) < 1
+	
+used_x = set()
+used_y = set()
+used_z = set()
 def dump_obj(mod, dp_info):
 	print dp_info
 	IA_d3d10 = IA_D3D10[str(dp_info.input_layout_index)]
@@ -396,11 +422,16 @@ def dump_obj(mod, dp_info):
 	for i in xrange(dp_info.index_min, dp_info.index_max + 1, 1):
 		vertex = parse_vertex(getter, IA_d3d10, IA_game)
 		if mod.bone_num > 0:
-			unnormalize_vertex(vertex, mod.inv_norm_mat, mod.base_y)
+			unnormalize_vertex(vertex, mod.inv_norm_mat)
+		
 		vertices.append(vertex)
-		for k, v in sorted(vertex.iteritems()):
-			print k, v
-		print "-" * 10
+		
+		used_x.add(vertex["Position"][0])
+		used_y.add(vertex["Position"][1])
+		used_z.add(vertex["Position"][2])
+		# for k, v in sorted(vertex.iteritems()):
+		# 	print k, v
+		# print "-" * 10
 	# Dump
 	if not DUMP_OBJ:
 		return ""
@@ -460,7 +491,7 @@ def calc_vertex_format_size(IA_d3d10):
 		vertex_format_size += format_size
 	return vertex_format_size
 
-def unnormalize_vertex(vertex, inv_norm_mat, base_y):
+def unnormalize_vertex(vertex, inv_norm_mat):
 	pos = list(vertex["Position"])
 	if len(pos) == 2:
 		pos.extend([0.0, 1.0])
@@ -469,7 +500,6 @@ def unnormalize_vertex(vertex, inv_norm_mat, base_y):
 	assert len(pos) == 4
 	pos_mat = numpy.matrix(pos)
 	pos_out = (pos_mat * inv_norm_mat).getA1()
-	pos_out[1] += base_y
 	vertex["Position"] = tuple(pos_out)
 	
 def dump_obj_vertices(vertex):
@@ -574,3 +604,4 @@ if __name__ == '__main__':
 		min_joint_id = min(used_joint_ids)
 		print "=" * 30
 		print "Joint Id Range = [%d, %d]" % (min_joint_id, max_joint_id)
+		
