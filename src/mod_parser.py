@@ -150,6 +150,7 @@ class CModel(object):
 		# floating point block
 		self.inv_world_translation = header.get("3f", offset=0x40)	# ?
 		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
+		self.base_y = self.world_scale_factor #?
 		print "inv_world_translation:", self.inv_world_translation
 		print "world_scale_factor:", self.world_scale_factor
 		
@@ -211,6 +212,8 @@ class CModel(object):
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x18)
 		mirror_index = [None] * self.bone_num
 		parent_index = [None] * self.bone_num
+		bone_mat = [None] * self.bone_num
+		bone_offset_mat = [None] * self.bone_num
 		for bone_index in xrange(self.bone_num):
 			bone_info1 = mod.block(0x18)
 			unk1 = bone_info1.get("4B")
@@ -220,31 +223,54 @@ class CModel(object):
 			parent_index[bone_index] = unk1[1]
 			mirror_index[bone_index] = unk1[2]
 		
+		root_index = None
 		for bone_index in xrange(self.bone_num):
 			parent = parent_index[bone_index]
 			assert (parent == 0xFF or \
 					(parent != bone_index and 0 <= parent < self.bone_num))
 			mirror = mirror_index[bone_index]
 			assert mirror == 0xFF or mirror_index[mirror] == bone_index
+			if root_index is None and parent == 0xFF:
+				root_index = bone_index
 			
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
 		# 0x40 is a typical size for a matrix
+		# bone transformation
 		for bone_index in xrange(self.bone_num):
-			print mod.get("4f")
-			print mod.get("4f")
-			print mod.get("4f")
-			print mod.get("4f")
-			print
+			mat = numpy.matrix([
+				list(mod.get("4f")),
+				list(mod.get("4f")),
+				list(mod.get("4f")),
+				list(mod.get("4f")),
+			])
+			bone_mat[bone_index] = mat
+			print mat
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
+		# bone offset matrix:
+		#	model space -> bone space
 		for bone_index in xrange(self.bone_num):
-			print mod.get("4f")
-			print mod.get("4f")
-			print mod.get("4f")
-			print mod.get("4f")
+			mat = numpy.matrix([
+				list(mod.get("4f")),
+				list(mod.get("4f")),
+				list(mod.get("4f")),
+				list(mod.get("4f")),
+			])
+			bone_offset_mat[bone_index] = mat
+			print mat
 			print
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + 0x100)
 		mod.skip(0x100)
-	
+		
+		# The final vertex position will sometimes be encoded in format
+		# such as DXGI_FORMAT_R16G16B16A16_SNORM, DXGI_FORMAT_R16G16B16A16_UNORM, etc.
+		# i.e. they are normalized. We have to invert the normalization process in order
+		# to get the correct binding pose.
+		# Luckily the `normalize matrix` is 'baked' in the `bone offset matrix`.
+		# We can calculate the invert normalize matrix as below
+		self.inv_norm_mat = bone_offset_mat[root_index] * bone_mat[root_index].I
+		print "Invert normalize matrix:"
+		print self.inv_norm_mat
+		
 	# not even read by the game
 	def read_bounding_box(self, mod):
 		mod.seek(self.n2_array_offset)
@@ -369,6 +395,8 @@ def dump_obj(mod, dp_info):
 	getter.seek(dp_info.vb_offset + vertex_format_size * dp_info.index_min)
 	for i in xrange(dp_info.index_min, dp_info.index_max + 1, 1):
 		vertex = parse_vertex(getter, IA_d3d10, IA_game)
+		if mod.bone_num > 0:
+			unnormalize_vertex(vertex, mod.inv_norm_mat, mod.base_y)
 		vertices.append(vertex)
 		for k, v in sorted(vertex.iteritems()):
 			print k, v
@@ -432,6 +460,18 @@ def calc_vertex_format_size(IA_d3d10):
 		vertex_format_size += format_size
 	return vertex_format_size
 
+def unnormalize_vertex(vertex, inv_norm_mat, base_y):
+	pos = list(vertex["Position"])
+	if len(pos) == 2:
+		pos.extend([0.0, 1.0])
+	elif len(pos) == 3:
+		pos.append(1.0)
+	assert len(pos) == 4
+	pos_mat = numpy.matrix(pos)
+	pos_out = (pos_mat * inv_norm_mat).getA1()
+	pos_out[1] += base_y
+	vertex["Position"] = tuple(pos_out)
+	
 def dump_obj_vertices(vertex):
 	obj_lines = []
 	pos = vertex["Position"]
