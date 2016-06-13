@@ -390,11 +390,12 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 	offset_attri_list = []
 	offset = 0
 	for element in IA_d3d10:
-		format_size = dxgi_format_parse.get_format_size(element["Format"])
+		fmt = element["Format"]
+		format_size = dxgi_format_parse.get_format_size(fmt)
 		attri_data = getter.get_raw(format_size)
-		attri = dxgi_format_parse.parse_format(attri_data, element["Format"])
-		attri_int = dxgi_format_parse.parse_format_int(attri_data, element["Format"])
-		offset_attri_list.append((offset, offset + format_size, attri, attri_int))
+		attri = dxgi_format_parse.parse_format(attri_data, fmt)
+		attri_norm = dxgi_format_parse.normalize(attri, fmt)
+		offset_attri_list.append((offset, offset + format_size, attri, attri_norm))
 		offset += format_size
 	vertex = {}
 	for config in IA_game:
@@ -402,7 +403,7 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 		fetch_next = False
 		fetch_index = 0
 		total = config["component_count"] + len(v)
-		for offset_beg, offset_end, attri, attri_int in offset_attri_list:
+		for offset_beg, offset_end, attri, attri_norm in offset_attri_list:
 			if not (fetch_next or offset_beg <= config["offset"] < offset_end):
 				continue
 			if not fetch_next:
@@ -411,9 +412,10 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 				fetch_next = True
 			to_fetch_count = total - len(v)
 			if config["sematics"] == "Joint":
-				v.extend(attri_int[fetch_index: fetch_index + to_fetch_count])
+				src = attri
 			else:
-				v.extend(attri[fetch_index: fetch_index + to_fetch_count])
+				src = attri_norm
+			v.extend(src[fetch_index: fetch_index + to_fetch_count])
 			fetch_index = 0
 			fetch_next = (len(v) < total)
 	

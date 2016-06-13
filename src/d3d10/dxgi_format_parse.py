@@ -32,10 +32,10 @@ def parse_format(data, fmt):
 	elif fmt == DXGI_FORMAT_R10G10B10A2_UNORM:
 		v = struct.unpack(ENDIAN + "I", data)[0]
 		return (
-			((v >> 0) & 1023) / 1023.0,
-			((v >> 10) & 1023) / 1023.0,
-			((v >> 20) & 1023) / 1023.0,
-			((v >> 30) & 3) / 3.0,
+			(v >>  0) & 1023,
+			(v >> 10) & 1023,
+			(v >> 20) & 1023,
+			(v >> 30) & 3,
 		)
 	elif fmt == DXGI_FORMAT_R16G16_FLOAT:
 		return (
@@ -73,32 +73,31 @@ def parse_format(data, fmt):
 	else:
 		assert False, "unsupported fmt: %d" % fmt
 
-def parse_format_int(data, fmt):
+def parse_format_normalized(data, fmt):
 	data = parse_format(data, fmt)
+	return normalize(data)
+		
+def normalize(data, fmt):
+	if fmt == DXGI_FORMAT_R10G10B10A2_UNORM:
+		return (data[0] / 1023.0, data[1] / 1023.0, data[2] / 1023.0, data[3] / 3.0)
 	if fmt == DXGI_FORMAT_R16G16B16A16_SNORM:
-		return map(lambda v: 32767.0 * v, data)
-	elif fmt == DXGI_FORMAT_R10G10B10A2_UNORM:
-		return (
-			1023.0 * data[0],
-			1023.0 * data[1],
-			1023.0 * data[2],
-			3.0 * data[3],
-		)
+		div = 32767.0
 	elif fmt == DXGI_FORMAT_R8G8B8A8_UNORM:
-		return map(lambda v: 255.0 * v, data)
+		div = 255.0
 	elif fmt == DXGI_FORMAT_R8G8B8A8_SNORM:
-		return map(lambda v: 127.0 * v, data)
+		div = 127.0
 	else:
 		return data
-		
+	return map(lambda v: v / div, data)
+
 def _parse_snorm8(data):
-	return struct.unpack(ENDIAN + "b", data)[0] / 127.0
+	return struct.unpack(ENDIAN + "b", data)[0]
 
 def _parse_unorm8(data):
-	return struct.unpack(ENDIAN + "B", data)[0] / 255.0
+	return struct.unpack(ENDIAN + "B", data)[0]
 
 def _parse_snorm16(data):
-	return struct.unpack(ENDIAN + "h", data)[0] / 32767.0
+	return struct.unpack(ENDIAN + "h", data)[0]
 
 def _parse_float(data):
 	return struct.unpack(ENDIAN + "f", data)[0]
