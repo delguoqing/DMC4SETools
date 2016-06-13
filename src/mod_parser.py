@@ -209,9 +209,24 @@ class CModel(object):
 		mod.seek(self.bone_info_offset)
 		print "reading bone data, bone_num = %d" % self.bone_num
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x18)
+		mirror_index = [None] * self.bone_num
+		parent_index = [None] * self.bone_num
 		for bone_index in xrange(self.bone_num):
 			bone_info1 = mod.block(0x18)
-			print map(hex, bone_info1.get("BBBB")), bone_info1.get("5f")
+			unk1 = bone_info1.get("4B")
+			unk2 = bone_info1.get("5f")
+			print bone_index, unk1, unk2
+			
+			parent_index[bone_index] = unk1[1]
+			mirror_index[bone_index] = unk1[2]
+		
+		for bone_index in xrange(self.bone_num):
+			parent = parent_index[bone_index]
+			assert (parent == 0xFF or \
+					(parent != bone_index and 0 <= parent < self.bone_num))
+			mirror = mirror_index[bone_index]
+			assert mirror == 0xFF or mirror_index[mirror] == bone_index
+			
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
 		# 0x40 is a typical size for a matrix
 		for bone_index in xrange(self.bone_num):
@@ -290,20 +305,21 @@ class CModel(object):
 			vec2 = mod.get("3f")
 			reserved_1 = mod.get("I")
 			assert reserved_1 == 0			
-			print "min", vec1
-			print "max", vec2
-			print "==========="
+			#print "min", vec1
+			#print "max", vec2
+			#print "==========="
 			mat = []
 			for i in xrange(4):
 				mat.append(mod.get("4f"))
-				print mat[-1]
-			print "==========="
+			#for row in mat:
+			#	print row
+			#print "==========="
 
 			vec3 = mod.get("3f")
 			reserved_2 = mod.get("I")
 			assert reserved_2 == 0
-			print "vec", vec3
-			print
+			#print "vec", vec3
+			#print
 			
 			self.n1_block_list.append((numpy.matrix([mat[0], mat[1], mat[2], mat[3]]),
 									   vec1, vec2, vec3))			
@@ -369,6 +385,7 @@ def dump_obj(mod, dp_info):
 	res = "\n".join(obj_lines)
 	return res
 
+used_joint_ids = set()
 def parse_vertex(getter, IA_d3d10, IA_game):
 	offset_attri_list = []
 	offset = 0
@@ -399,7 +416,11 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 				v.extend(attri[fetch_index: fetch_index + to_fetch_count])
 			fetch_index = 0
 			fetch_next = (len(v) < total)
-			
+	
+	global used_joint_ids
+	joint_ids = map(int, vertex.get("Joint", ()))
+	used_joint_ids.update(joint_ids)
+				
 	return vertex
 				
 def calc_vertex_format_size(IA_d3d10):
@@ -505,3 +526,9 @@ if __name__ == '__main__':
 			parse(sys.argv[1])
 	else:	
 		parse("st200-m91.MOD")
+		
+	if used_joint_ids:
+		max_joint_id = max(used_joint_ids)
+		min_joint_id = min(used_joint_ids)
+		print "=" * 30
+		print "Joint Id Range = [%d, %d]" % (min_joint_id, max_joint_id)
