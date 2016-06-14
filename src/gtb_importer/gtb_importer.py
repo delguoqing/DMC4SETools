@@ -99,6 +99,23 @@ def import_mesh(name, msh, gtb):
 			group.add([i], weight, "REPLACE")
 	return obj
 
+def apply_bind_pose_matrix(armt, bone_idx, used, parent_list, bone_mat_list):
+	bone = armt.edit_bones[bone_idx]
+	if used[bone_idx]:
+		return bone
+	x, y, z = bone_mat_list[16 * bone_idx + 12: 16 * bone_idx + 15]
+	if parent_list[bone_idx] == -1:
+		bone.head = (x, z, y)
+	else:
+		parent_bone = apply_bind_pose_matrix(armt, parent_list[bone_idx], used,
+											 parent_list, bone_mat_list)
+		bone.head = (x + parent_bone.head[0], z + parent_bone.head[1],
+					 y + parent_bone.head[2])
+	bone.tail = bone.head
+	bone.use_connect = False
+	used[bone_idx] = True
+	return bone
+
 def import_armature(gtb):	
 	skeleton = gtb["skeleton"]
 	parent_list = skeleton["parent"]
@@ -120,15 +137,13 @@ def import_armature(gtb):
 	
 	bpy.ops.object.mode_set(mode='EDIT')
 
-	# TODO: need to inherit from parent
 	# TODO: need to apply the full matrix
+	used = [False] * bone_num
 	for bone_idx in range(bone_num):
 		bone_name = bone_name_list[bone_idx]
 		bone = armt.edit_bones.new(bone_name)
-		x, y, z = bone_mat_list[16 * bone_idx + 12: 16 * bone_idx + 15]
-		bone.head = (x, z, y)
-		bone.tail = bone.head
-		bone.use_connect = False
+	for i in range(bone_num):
+		apply_bind_pose_matrix(armt, i, used, parent_list, bone_mat_list)
 		
 	is_leaf = [True] * bone_num
 	for bidx, pidx in enumerate(parent_list):
