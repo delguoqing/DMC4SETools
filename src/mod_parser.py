@@ -8,12 +8,18 @@ import math
 import json
 import util
 import input_layout
+import collada
 
 from d3d10 import dxgi_format_parse
 
-DUMP_OBJ = True
-DUMP_OBJ_WRITE_NORMAL = True
-DUMP_OBJ_WRITE_UV = True
+DUMP_TYPE_NONE = 0
+DUMP_TYPE_OBJ = 1
+DUMP_TYPE_COLLADA = 2
+DUMP_TYPE_GTB = 3
+DUMP_TYPE = DUMP_TYPE_COLLADA
+
+DUMP_NORMAL = True
+DUMP_UV = True
 
 IA_D3D10 = None
 IA_GAME = None
@@ -188,24 +194,57 @@ class CModel(object):
 		self.read_not_used(mod)
 		mod.assert_end()
 		
-		print "dumping dp"
+		print "-" * 30
+		print "Parsing Primitives:"
+		
+		# init dump
+		if DUMP_TYPE == DUMP_TYPE_COLLADA:
+			collada_doc = collada.Collada()
+			root_node = collada.scene.Node("Root", children=[])
+			scene = collada.scene.Scene("Scene", [root_node])
+			collada_doc.scenes.append(scene)
+			collada_doc.scene = scene
+		elif DUMP_TYPE == DUMP_TYPE_GTB:
+			gtb = {
+				"objects": {},
+			}
+			if self.bone_num > 0:
+				gtb["skeleton"] = {}
+				gtb["skeleton"]["name"] = map(lambda v: "Bone%d" % v, range(self.bone_num))
+				gtb["skeleton"]["parent"] = map(lambda v: v == 255 and -1 or v,
+												self.bone_parent)
+				mat_list = []
+				for mat in self.bone_mat:
+					mat_list.extend(mat.getA1())
+				gtb["skeleton"]["matrix"] = mat_list
+				
 		for dp_index in xrange(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
-
-			# input_layout_desc = input_layout_descs[str(dp_info.input_layout_index)]
-			# print "input_layout_index", dp_info.input_layout_index
-			# for input_element in input_layout_desc:
-			# 	print "%s%d: %d" % (input_element["SematicName"], input_element["SematicIndex"],
-			# 						input_element["Format"])
-		
+			vertices = parse_primitives(self, dp_info)
+			indices = self.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
+			util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
+			indices = map(lambda v: v - dp_info.index_min, indices)
 			assert dp_info.bounding_box_id in self.id_2_bounding_box
-		
-			obj_str = dump_obj(self, dp_info)
-			if DUMP_OBJ:
+			if DUMP_TYPE == DUMP_TYPE_OBJ:
+				obj_str = dump_obj(vertices, indices)
 				fout = open("objs/dp_%d.obj" % dp_index, "w")
 				fout.write(obj_str)
 				fout.close()
-
+			elif DUMP_TYPE == DUMP_TYPE_COLLADA:
+				dump_collada(vertices, indices, collada_doc)
+			elif DUMP_TYPE == DUMP_TYPE_GTB:
+				dump_gtb(vertices, indices, gtb)
+		
+		# finish up dump
+		if DUMP_TYPE == DUMP_TYPE_COLLADA:
+			fp = open("objs/model.dae", "w")
+			collada_doc.write(fp)
+			fp.close()
+		elif DUMP_TYPE == DUMP_TYPE_GTB:
+			fp = open("objs/model.gtb", "w")
+			json.dump(gtb, fp, indent=2, sort_keys=True)
+			fp.close()
+		
 	def read_bone(self, mod):
 		if self.bone_num <= 0:
 			return
@@ -272,6 +311,10 @@ class CModel(object):
 		self.inv_norm_mat = bone_offset_mat[root_index] * bone_mat[root_index]
 		print "Invert normalize matrix:"
 		print self.inv_norm_mat
+		
+		self.bone_mat = bone_mat
+		self.bone_offset_mat = bone_offset_mat
+		self.bone_parent = parent_index
 		
 	# not even read by the game
 	def read_bounding_box(self, mod):
@@ -380,6 +423,8 @@ def parse(path):
 	print_bounding_box_check(model)
 	
 def print_bounding_box_check(model):
+	if not all((used_x, used_y, used_z)):
+		return
 	print "-" * 30
 	calc_min_x = min(used_x)
 	calc_max_x = max(used_x)
@@ -401,7 +446,7 @@ def print_bounding_box_check(model):
 used_x = set()
 used_y = set()
 used_z = set()
-def dump_obj(mod, dp_info):
+def parse_primitives(mod, dp_info):
 	print dp_info
 	IA_d3d10 = IA_D3D10[str(dp_info.input_layout_index)]
 	IA_game = IA_GAME[dp_info.input_layout_index]
@@ -432,18 +477,113 @@ def dump_obj(mod, dp_info):
 		# for k, v in sorted(vertex.iteritems()):
 		# 	print k, v
 		# print "-" * 10
-	# Dump
-	if not DUMP_OBJ:
-		return ""
-	indices = mod.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
-	util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
+	return vertices
+
+def dump_obj(vertices, indices):
 	obj_lines = []
 	for vertex in vertices:
 		obj_lines.extend( dump_obj_vertices(vertex) )
-	obj_lines.extend( dump_obj_faces(indices, dp_info.index_min) )
+	obj_lines.extend( dump_obj_faces(indices) )
 	res = "\n".join(obj_lines)
 	return res
 
+# dump all primitives to a single dae file
+# because pycollada does not yet support skinning yet, we have to stop here, and find
+# another way.
+def dump_collada(vertices, indices, doc):
+	i = len(doc.geometries)
+	v0 = vertices[0]
+	has_normal = "Normal" in v0
+	has_uv = "TexCoord" in v0
+	# separate source from interleave data
+	pos_list = []
+	normal_list = []
+	uv_list = []
+	for v in vertices:
+		pos = v["Position"]
+		pos_list.extend(v["Position"][:3])
+		if has_normal:
+			normal_list.extend(v["Normal"][:3])
+		if has_uv:
+			uv_list.extend(v["TexCoord"][:2])
+				
+	# build up collada source and inputlist
+	inputlist = collada.source.InputList()
+	pos_src = collada.source.FloatSource("pos_src%d" % i, numpy.array(pos_list),
+										 ("X", "Y", "Z"))
+	src_list = [pos_src]
+	inputlist.addInput(0, "VERTEX", "#pos_src%d" % i)
+	if has_normal:
+		src_list.append( collada.source.FloatSource(
+			"normal_src%d" % i, numpy.array(normal_list), ("X", "Y", "Z")
+		) )
+		inputlist.addInput(0, "NORMAL", "#normal_src%d" % i)
+	if has_uv:
+		src_list.append( collada.source.FloatSource(
+			"uv_src%d" % i, numpy.array(uv_list), ("U", "V")
+		) )
+		inputlist.addInput(0, "TEXCOORD", "#uv_src%d" % i)
+			
+	# create a default material
+	effect = collada.material.Effect("effect%d" % i, [], "constant")
+	mat = collada.material.Material("material%d" % i, "mymaterial%d" % i, effect)
+	doc.effects.append(effect)
+	doc.materials.append(mat)
+	# create primitives
+	mesh = collada.geometry.Geometry(doc, "Geometry%d" % i, "Mesh%d" % i, src_list)
+	triset = mesh.createTriangleSet(numpy.array(indices), inputlist, "materialref%d" % i)
+	mesh.primitives.append(triset)
+	doc.geometries.append(mesh)
+	# create scene node
+	mat_node = collada.scene.MaterialNode("materialref%d" % i, mat, inputs=[])
+	geom_node = collada.scene.GeometryNode(mesh, [mat_node])
+	doc.scene.nodes[0].children.append(geom_node)
+
+def dump_gtb(vertices, indices, gtb):
+	v0 = vertices[0]
+	
+	msh = {"flip_v": 1, "double_sided": 0, "shade_smooth": True,
+		   "vertex_num": len(vertices), "index_num": len(indices)}
+	msh["indices"] = indices
+	msh["position"] = []
+	has_normal = "Normal" in v0
+	if has_normal:
+		msh["normal"] = []
+	has_uv = "TexCoord" in v0
+	if has_uv:
+		msh["uv0"] = []
+		msh["uv_count"] = 1
+	else:
+		msh["uv_count"] = 0
+	has_joint = "Joint" in v0
+	if has_joint:
+		msh["max_involved_joint"] = len(v0["Joint"])
+		msh["joints"] = []
+		msh["weights"] = []
+	else:
+		msh["max_involved_joint"] = 0
+		
+	for v in vertices:
+		pos = v["Position"]
+		msh["position"].extend(v["Position"][:3])
+		if has_normal:
+			msh["normal"].extend(v["Normal"][:3])
+		if has_uv:
+			msh["uv0"].extend(v["TexCoord"][:2])
+			
+		if has_joint:
+			msh["joints"].extend(map(int, v["Joint"]))
+			weights = v.get("Weight", [])
+			msh["weights"].extend(weights)
+			weight_lack_num = len(v["Joint"]) - len(weights)
+			if weight_lack_num > 0:
+				msh["weights"].append(1.0 - sum(weights))
+				msh["weights"].extend([0.0] * (weight_lack_num - 1))
+	
+	msh_idx = len(gtb["objects"])
+	msh_name = "msh%d" % msh_idx
+	gtb["objects"][msh_name] = msh		
+			
 used_joint_ids = set()
 def parse_vertex(getter, IA_d3d10, IA_game):
 	offset_attri_list = []
@@ -518,11 +658,11 @@ def dump_obj_faces(indices, base=0):
 	
 	fmt = "%d"
 	elem_count = 1
-	if DUMP_OBJ_WRITE_UV:
+	if DUMP_UV:
 		fmt += "/%d"
 		elem_count += 1
-	if DUMP_OBJ_WRITE_NORMAL:
-		if not DUMP_OBJ_WRITE_UV:
+	if DUMP_NORMAL:
+		if not DUMP_UV:
 			fmt += "/"
 		fmt += "/%d"
 		elem_count += 1

@@ -8,3 +8,5 @@ src/shader/tmp/*.txt
 *.vs
 src/err.txt
 src/mfx_log.txt
+*.dae
+*.gtb

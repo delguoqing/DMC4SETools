@@ -106,4 +106,4 @@ def _parse_uint16(data):
 	return struct.unpack(ENDIAN + "H", data)[0]
 
 def _parse_float16(data):
-	return numpy.frombuffer(data, dtype=numpy.dtype(ENDIAN + "f2"))[0]
+	return float(numpy.frombuffer(data, dtype=numpy.dtype(ENDIAN + "f2"))[0])
