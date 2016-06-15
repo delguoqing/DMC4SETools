@@ -258,8 +258,16 @@ class CModel(object):
 		for bone_index in xrange(self.bone_num):
 			bone_info1 = mod.block(0x18)
 			unk1 = bone_info1.get("4B")
-			unk2 = bone_info1.get("5f")
-			print bone_index, unk1, unk2
+			unk2 = bone_info1.get("f")
+			print "%d: id=%d, parent=%d, sym=%d, unk=%d" % (bone_index, unk1[0], unk1[1],
+															unk1[2], unk1[3])
+			print "\t", unk2
+			joint_length = bone_info1.get("f")
+			joint_position = bone_info1.get("3f")
+			calc_joint_length = (joint_position[0] ** 2 + joint_position[1] ** 2 + joint_position[2] ** 2) ** 0.5
+			assert abs(calc_joint_length - joint_length) < 1e-3
+			print "\t", "Position=(%f, %f, %f), Length=%f" % (
+				joint_position[0], joint_position[1], joint_position[2], joint_length)
 			
 			parent_index[bone_index] = unk1[1]
 			mirror_index[bone_index] = unk1[2]
