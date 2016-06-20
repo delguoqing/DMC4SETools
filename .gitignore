@@ -10,3 +10,4 @@ src/err.txt
 src/mfx_log.txt
 *.dae
 *.gtb
+src/model_log.txt

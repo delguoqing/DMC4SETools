@@ -6,44 +6,51 @@ class LMT(object):
 	def read(self, getter):
 		fourcc = getter.get("4s")
 		assert fourcc == "LMT\x00"
-		field_4 = getter.get("H")
-		assert field_4 == 0x43
+		reserved = getter.get("H")
+		assert reserved == 0x43
 		# motion count
-		count_6 = getter.get("H")
+		motion_num = getter.get("H")
 		# motion list
-		struc_6_list = []
-		struc_6_offset_list = getter.get("%dI" % count_6, force_tuple=True)
-		for offset in struc_6_offset_list:
-			if offset == 0:
+		motion_list = []
+		motion_offset_list = getter.get("%dI" % motion_num, force_tuple=True)
+		for motion_offset in motion_offset_list:
+			if motion_offset == 0:
 				continue
-			getter.seek(offset)
+			getter.seek(motion_offset)
 			print "======================"
-			print "motion offset =", hex(offset)
-			_struc_6 = struc_6()
-			_struc_6.read(getter.block(0x3c), getter)
-			struc_6_list.append(_struc_6)
+			print "motion offset = 0x%x" % motion_offset
+			_motion = motion()
+			_motion.read(getter.block(0x3c), getter)
+			motion_list.append(_motion)
 			print 
 			
 # motion
-class struc_6(object):
+class motion(object):
 	
 	SIZE = 0x3c
 	
 	def read(self, getter, lmt):
 		get = getter.get
-		struc_7_arr_offset = getter.get("I")
-		struc_7_arr_size = getter.get("I")
-		getter.skip(43)
-		field_33 = getter.get("B")
+		#print get("IIIi")
+		#print get("f4BfI")
+		#print get("IIIf")
+		#print get("4BII")
+		
+		track_off = getter.get("I")
+		track_num = getter.get("I")
+		getter.skip(40)
+		field_30 = getter.get("I")
+		field_33 = (field_30 >> 24) & 0xFF
 		offset_34 = getter.get("I")
+		offset_38 = getter.get("I")
 		
 		if (field_33 & 1) == 0:
-			struc_7_list = []
-			lmt.seek(struc_7_arr_offset)
-			for i in xrange(struc_7_arr_size):
-				_struc_7 = struc_7()
-				_struc_7.read(lmt.block(0x24), lmt)
-				struc_7_list.append(_struc_7)
+			track_list = []
+			lmt.seek(track_off)
+			for track_index in xrange(track_num):
+				_track = track()
+				_track.read(lmt.block(0x24), lmt)
+				track_list.append(_track)
 		
 		if offset_34 != 0:
 			print "offset_34 = 0x%x, flag=%d" % (offset_34, (field_33 & 2 == 0))
@@ -52,13 +59,19 @@ class struc_6(object):
 				_struc_8 = struc_8()
 				_struc_8.read(getter.block(struc_8.SIZE), getter)
 		
+		if (field_30 >> 16) & 0x1F:
+			# offset_38 is valid
+			if field_30 & 0x4000000:
+				n = (field_30 >> 16) & 0x1F
+				
+			
 # bone keyframe
-class struc_7(object):
+class track(object):
 	
 	SIZE = 0x24
 	
 	def read(self, getter, lmt):
-		# print "struc_7 offset = 0x%x" % lmt.offset
+		# print "track offset = 0x%x" % lmt.offset
 		get = getter.get
 		flag_0 = getter.get("I")
 		# track type
@@ -81,6 +94,11 @@ class struc_7(object):
 		unk = getter.get("4f")
 		offset_20 = getter.get("I")	# points to struc_9, size = 0x20
 									# keyframes
+									
+		if offset_C != 0:
+			lmt.seek(offset_C)
+			
+			
 		if (offset_20 != 0 and \
 			(type_0 > 9 or type_0 in (4, 5, 7))):
 			offset_20 = offset_20
@@ -88,8 +106,8 @@ class struc_7(object):
 			_struc_9.read(getter)
 		else:
 			assert offset_20 == 0
-		print "track: type_0=%d, type_1=%d, type_2=%d, bone_index=0x%x, size=0x%x" % (
-			type_0, type_1, type_2, bone_index, size_of_offset_C)
+		print "track: type_0=%d, type_1=%d, type_2=%d, bone_id=%d, size=0x%x, float_4=%f" % (
+			type_0, type_1, type_2, bone_index, size_of_offset_C, float_4)
 		if type_1 in (0, 3):
 			print "ROTATION",
 			util.assert_quat(unk)
@@ -108,7 +126,10 @@ class struc_8(object):
 	
 	def read(self, getter, lmt):
 		get = getter.get
-		
+		# offset_44
+		# offset_8C
+		# offset_D4
+		# offset_11C
 		
 
 class struc_9(object):
@@ -117,7 +138,6 @@ class struc_9(object):
 	
 	def read(self, getter):
 		get = getter.get
-		at = getter.at
 		seek = getter.seek
 		
 		get("f", offset=0x4)
@@ -127,6 +147,14 @@ class struc_9(object):
 		get("f", offset=0x14)
 		get("f", offset=0x18)
 		get("f", offset=0x1c)
+	
+class struc_10(object):
+	
+	SIZE = 0xc
+	
+	def read(self, getter):
+		# offset_8
+		pass
 	
 def parse(lmt_path):
 	f = open(lmt_path, "rb")
