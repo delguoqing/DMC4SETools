@@ -1,5 +1,27 @@
 import sys
+import struct
 import util
+
+# keyframe types
+POS_XYZ_FLOAT_T32 = 3
+POS_XYZT16 = 4
+POS_XYZT8 = 5
+ROT_XYZW14_T8 = 6
+ROT_XYZW7_T4 = 7
+ROT_XW14_T4 = 11
+ROT_YW14_T4 = 12
+ROT_ZW14_T4 = 13
+ROT_XYZW11_T4 = 14
+ROT_XYZW9_T4 = 15
+
+BONE_ROT = 0
+BONE_POS = 1
+BONE_SCALE = 2
+BONE_TRANS = (BONE_ROT, BONE_POS, BONE_SCALE)
+MODEL_ROT = 3
+MODEL_POS = 4
+MODEL_SCALE = 5
+MODEL_TRANS = (MODEL_ROT, MODEL_POS, MODEL_SCALE)
 
 class LMT(object):
 	
@@ -76,70 +98,218 @@ class track(object):
 		# print "track offset = 0x%x" % lmt.offset
 		get = getter.get
 		flag_0 = getter.get("I")
-		# track type
-		type_0 = flag_0 & 0xFF
-		# track type
-		# 0 - rotation
-		# 1 - position
-		# 2 - scale
-		# 3 - rotation used by bone_id 0xFF
-		# 4 - position used by bone_id 0xFF
-		# 5 - scale used by bone_id 0xFF
-		type_1 = (flag_0 >> 8) & 0xFF
+		# keyframe type
+		key_type = flag_0 & 0xFF
+		# transformation type
+		trans_type = (flag_0 >> 8) & 0xFF
+		# unknown
 		type_2 = (flag_0 >> 16) & 0xFF
 		# bone id
 		bone_id = (flag_0 >> 24)
 		
 		float_4 = getter.get("f")
-		size_of_offset_C = getter.get("I")
-		offset_C = getter.get("I")
-		unk = getter.get("4f")
-		offset_20 = getter.get("I")	# points to struc_9, size = 0x20
-									# keyframes? need keyframe count!
+		keyframes_size = getter.get("I")
+		keyframe_offset = getter.get("I")		
+		frame_0 = getter.get("4f")
+		
+		range_offset = getter.get("I")
+		if range_offset != 0:
+			assert key_type > 9 or key_type in (4, 5, 7)
+			lmt.seek(range_offset)
+			range_scales = lmt.get("4f")
+			range_bases = lmt.get("4f")
+		
+		# keyframe data are stored in a fairly compact format
+		if keyframe_offset != 0:
+			def print_keyframe(i, t, v0, v1, v2, v3):
+				print "\tt=%d, eval=(%f, %f, %f, %f)" % (t, v0, v1, v2, v3)
 				
-		# type_0:
-		# 0, 1: no keyframe
-		# 2: no keyframe?
-		# we got a look up table @10ADE60, each element is of size 0xC
-		#       (keyframe size, get keyframe time, get value)
-		
-		
-		if offset_C != 0:
-			print "checking offset_C = 0x%x, size = 0x%x" % (offset_C, size_of_offset_C)
-			lmt.seek(offset_C)
-			a = lmt.block(size_of_offset_C)
-			if type_0 == 4:
-				assert size_of_offset_C % 0x8 == 0
-				for ki in xrange(size_of_offset_C / 8):
-					print 
-			
-		if (offset_20 != 0 and \
-			(type_0 > 9 or type_0 in (4, 5, 7))):
-			offset_20 = offset_20
-			print "offset_20 = 0x%x" % offset_20
-			lmt.seek(offset_20)
-			_struc_9 = struc_9()
-			_struc_9.read(lmt.block(struc_9.SIZE))
-		else:
-			assert offset_20 == 0
-		print "track: type_0=%d, type_1=%d, type_2=%d, bone_id=%d, float_4=%f" % (
-			type_0, type_1, type_2, bone_id, float_4)
-		if type_1 in (0, 3):
+			print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
+				keyframe_offset, keyframes_size, key_type
+			)
+			lmt.seek(keyframe_offset)
+			keyframes = lmt.block(keyframes_size)
+			if key_type == POS_XYZ_FLOAT_T32:
+				assert keyframes_size % 16 == 0
+				keyframe_num = keyframes_size / 16
+				for i in xrange(keyframe_num):
+					v0, v1, v2, t = keyframes.get("fffI")
+					print_keyframe(i, t, v0, v1, v2, 0.0)
+			elif key_type == POS_XYZT16:
+				assert keyframes_size % 8 == 0
+				keyframe_num = keyframes_size / 8
+				FAC = struct.unpack(">f", "\x37\x80\x08\x01")[0]
+				for i in xrange(keyframe_num):
+					v0, v1, v2, t = keyframes.get("HHHH")
+					v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
+					v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
+					v2 = (v2 - 8) * FAC * range_scales[2] + range_bases[2]
+					print_keyframe(i, t, v0, v1, v2, 0.0)
+			elif key_type == POS_XYZT8:
+				assert keyframes_size % 4 == 0
+				keyframe_num = keyframes_size / 4
+				FAC = struct.unpack(">f", "\x3B\x88\x88\x89")[0]
+				for i in xrange(keyframe_num):
+					v0, v1, v2, t = keyframes.get("BBBB")
+					v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
+					v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
+					v2 = (v2 - 8) * FAC * range_scales[2] + range_bases[2]
+					print_keyframe(i, t, v0, v1, v2, 0.0)
+			elif key_type == ROT_XYZW14_T8:
+				assert keyframes_size % 8 == 0
+				keyframe_num = keyframes_size / 8
+				FAC = struct.unpack(">f", "\x38\x80\x00\x00")[0]
+				for i in xrange(keyframe_num):
+					q = keyframes.get("Q")
+					v3 = ((q >> 0) & 0x3FFF) << 2
+					if v3 & 0x8000: v3 -= (1 << 16)
+					v3 *= FAC
+					v2 = ((q >> 14) & 0x3FFF) << 2
+					if v2 & 0x8000: v2 -= (1 << 16)
+					v2 *= FAC
+					v1 = ((q >> 28) & 0x3FFF) << 2
+					if v1 & 0x8000: v1 -= (1 << 16)
+					v1 *= FAC
+					v0 = ((q >> 42) & 0x3FFF) << 2
+					if v0 & 0x8000: v0 -= (1 << 16)
+					v0 *= FAC
+					t = (q >> 56) & 0xFF
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			elif key_type == ROT_XYZW7_T4:
+				assert keyframes_size % 4 == 0
+				keyframe_num = keyframes_size / 4
+				FAC = struct.unpack(">f", "\x3C\x12\x49\x25")[0]
+				for i in xrange(keyframe_num):
+					v = keyframes.get("I")
+					t = (v >> 28) & 0xF
+					v0 = ((v >> 0 & 0x7F) - 8) * FAC * range_scales[0] + range_bases[0]
+					v1 = ((v >> 7 & 0x7F) - 8) * FAC * range_scales[1] + range_bases[1]
+					v2 = ((v >> 14 & 0x7F) - 8) * FAC * range_scales[2] + range_bases[2]
+					v3 = ((v >> 21 & 0x7F) - 8) * FAC * range_scales[3] + range_bases[3]
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			elif key_type == ROT_XW14_T4:
+				assert keyframes_size % 4 == 0
+				keyframe_num = keyframes_size / 4
+				FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
+				for i in xrange(keyframe_num):
+					v = keyframes.get("I")
+					t = (v >> 28) & 0xF
+					v0 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[0] + range_bases[0]
+					v1 = range_bases[1]
+					v2 = range_bases[2]
+					v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			elif key_type == ROT_YW14_T4:
+				assert keyframes_size % 4 == 0
+				keyframe_num = keyframes_size / 4
+				FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
+				for i in xrange(keyframe_num):
+					v = keyframes.get("I")
+					t = (v >> 28) & 0xF
+					v0 = range_bases[0]
+					v1 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[1] + range_bases[1]
+					v2 = range_bases[2]
+					v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			elif key_type == ROT_ZW14_T4:
+				assert keyframes_size % 4 == 0
+				keyframe_num = keyframes_size / 4
+				FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
+				for i in xrange(keyframe_num):
+					v = keyframes.get("I")
+					t = (v >> 28) & 0xF
+					v0 = range_bases[0]
+					v1 = range_bases[1]
+					v2 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[2] + range_bases[2]
+					v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			elif key_type == ROT_XYZW11_T4:
+				assert keyframes_size % 6 == 0
+				keyframe_num = keyframes_size / 6
+				FAC = struct.unpack(">f", "\x3A\x01\x02\x04")[0]
+				for i in xrange(keyframe_num):
+					v = keyframes.get("HHH")
+					v0 = ((v[0] & 0x7FF) - 8) * FAC * range_scales[0] + range_bases[0]
+					v1 = ((((v[0] >> 11) << 6) | (v[1] & 0x3F)) - 8) * FAC * range_scales[1] + range_bases[1]
+					v2 = ((((v[1] >> 6) << 1) | (v[2] & 1)) - 8) * FAC * range_scales[2] + range_bases[2]
+					v3 = (((v[2] >> 1) & 0x7FF) - 8) * FAC * range_scales[3] + range_bases[3]
+					t = (v[2] >> 12)
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			elif key_type == ROT_XYZW9_T4:
+				assert keyframes_size % 5 == 0
+				keyframe_num = keyframes_size / 5
+				FAC = struct.unpack(">f", "\x3B\x04\x21\x08")[0]
+				for i in xrange(keyframe_num):
+					v = keyframes.get("5B")
+					v0 = (((v[0] << 1) | (v[1] & 1)) - 8) * FAC * range_scales[0] + range_bases[0]
+					v1 = ((((v[1] >> 1) << 2) | v[2] & 0x3) - 8) * FAC * range_scales[1] + range_bases[1]
+					v2 = ((((v[2] >> 2) << 3) | (v[3] & 0x7)) - 8) * FAC * range_scales[2] + range_bases[2]
+					v3 = ((((v[3] >> 3) << 4) | (v[4] & 0xF)) - 8) * FAC * range_scales[3] + range_bases[3]
+					t = (v[2] >> 12)
+					# normalize
+					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+					v0 /= length
+					v1 /= length
+					v2 /= length
+					v3 /= length
+					print_keyframe(i, t, v0, v1, v2, v3)
+			else:
+				assert False, "unsupported keyframe packing type! %d" % key_type
+				
+		print "track: key_type=%d, trans_type=%d, type_2=%d, bone_id=%d, float_4=%f" % (
+			key_type, trans_type, type_2, bone_id, float_4)
+		if trans_type in (BONE_ROT, MODEL_ROT):
 			print "ROTATION",
-			util.assert_quat(unk)
-		elif type_1 in (1, 4):
+			util.assert_quat(frame_0)
+		elif trans_type in (BONE_POS, MODEL_POS):
 			print "POSITION",
-		elif type_1 in (2, 5):
+		elif trans_type in (BONE_SCALE, MODEL_SCALE):
 			print "SCALE   ",
 		else:
-			assert False, "unsupported type! %d" % type_1
-		print unk
+			assert False, "unsupported type! %d" % trans_type
+		print frame_0
 		print
 		
 		# assert model root transformation
-		if 3 <= type_1 <= 5:
-			assert bone_id == 255
-			
+		if bone_id == 255:
+			assert trans_type in MODEL_TRANS
+
 class struc_8(object):
 	
 	SIZE = 0x120
@@ -150,26 +320,6 @@ class struc_8(object):
 		# offset_8C
 		# offset_D4
 		# offset_11C
-		
-
-class struc_9(object):
-	
-	SIZE = 0x20
-	
-	def read(self, getter):
-		get = getter.get
-		seek = getter.seek
-		# min-max float value for a set of compressed keyframes
-		f0 = get("f", offset=0x0)
-		f1 = get("f", offset=0x4)
-		f2 = get("f", offset=0x8)
-		f3 = get("f", offset=0xc)
-		f4 = get("f", offset=0x10)
-		f5 = get("f", offset=0x14)
-		f6 = get("f", offset=0x18)
-		f7 = get("f", offset=0x1c)
-		print f0, f1, f2, f3
-		print f4, f5, f6, f7
 	
 class struc_10(object):
 	
