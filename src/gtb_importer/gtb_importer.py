@@ -132,15 +132,15 @@ def import_armature(gtb):
 		bone_name = bone_name_list[bone_idx]
 		bone = armt.edit_bones.new(bone_name)
 		bone.use_connect = False
-		loc, rot, scale = world_mat_list[bone_idx].decompose()
-		bone.head = (loc.x, loc.z, loc.y)
+		world_mat = world_mat_list[bone_idx]
+		head = mathutils.Vector([0.0, 0.0, 0.0, 1.0])
+		tail = mathutils.Vector([0.0, 1.0 * BONE_LENGTH, 0.0, 1.0])
+		head_world = world_mat * head
+		tail_world = world_mat * tail
+		bone.head = (head_world.x, head_world.z, head_world.y)
+		bone.tail = (tail_world.x, tail_world.z, tail_world.y)
+		_, rot, _ = world_mat.decompose()
 		axis, angle = rot.to_axis_angle()
-		if angle == 0.0:
-			axis = mathutils.Vector([0.0, 1.0, 0.0])
-		d = axis.copy()
-		d.normalize()
-		loc += d * BONE_LENGTH
-		bone.tail = (loc.x, loc.z, loc.y)
 		bone.roll = -angle
 		
 	for bone_idx in range(bone_num):
