@@ -7,6 +7,8 @@ import six
 import mathutils
 import json
 
+BONE_LENGTH = 10.0
+
 def ENSURE_LUT(v):
 	if hasattr(v, "ensure_lookup_table"):
 		v.ensure_lookup_table()
@@ -133,9 +135,11 @@ def import_armature(gtb):
 		loc, rot, scale = world_mat_list[bone_idx].decompose()
 		bone.head = (loc.x, loc.z, loc.y)
 		axis, angle = rot.to_axis_angle()
+		if angle == 0.0:
+			axis = mathutils.Vector([0.0, 1.0, 0.0])
 		d = axis.copy()
 		d.normalize()
-		loc += d
+		loc += d * BONE_LENGTH
 		bone.tail = (loc.x, loc.z, loc.y)
 		bone.roll = -angle
 		
