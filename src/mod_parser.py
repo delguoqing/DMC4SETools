@@ -217,6 +217,7 @@ class CModel(object):
 				for mat in self.bone_mat:
 					mat_list.extend(mat.getA1())
 				gtb["skeleton"]["matrix"] = mat_list
+				gtb["bone_id"] = self.bone_id
 				
 		for dp_index in xrange(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
@@ -255,6 +256,8 @@ class CModel(object):
 		parent_index = [None] * self.bone_num
 		bone_mat = [None] * self.bone_num
 		bone_offset_mat = [None] * self.bone_num
+		# bone id used for retargeting
+		bone_id = [None] * self.bone_num
 		for bone_index in xrange(self.bone_num):
 			bone_info1 = mod.block(0x18)
 			unk1, parent_joint, mirror_joint, unk2 = bone_info1.get("4B")
@@ -272,6 +275,7 @@ class CModel(object):
 			
 			parent_index[bone_index] = parent_joint
 			mirror_index[bone_index] = mirror_joint
+			bone_id[bone_index] = unk1
 		
 		root_index = None
 		for bone_index in xrange(self.bone_num):
@@ -324,6 +328,7 @@ class CModel(object):
 		self.bone_mat = bone_mat
 		self.bone_offset_mat = bone_offset_mat
 		self.bone_parent = parent_index
+		self.bone_id = bone_id
 		
 	# not even read by the game
 	def read_bounding_box(self, mod):

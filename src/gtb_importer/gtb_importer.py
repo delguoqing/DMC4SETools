@@ -105,8 +105,17 @@ def import_armature(gtb):
 	skeleton = gtb["skeleton"]
 	parent_list = skeleton["parent"]
 	bone_mat_list = convert_to_native_matrix(skeleton["matrix"])
+	bone_id = gtb.get("bone_id")
 	bone_name_list = skeleton["name"]
 	bone_num = len(parent_list)
+	
+	# for retargeting
+	if bone_id is None:
+		bone_mapping = dict([(str(i), i) for i in range(bone_num)])
+	else:
+		bone_mapping = {}
+		for idx, _id in enumerate(bone_id):
+			bone_mapping[str(_id)] = idx
 	
 	# calculate local to world matrix
 	world_mat_list = [None] * bone_num
@@ -120,6 +129,7 @@ def import_armature(gtb):
 	obj.show_x_ray = True
 	obj.name = armature_name
 	obj.select = True
+	obj["bone_mapping"] = bone_mapping
 	bpy.context.scene.objects.active = obj
 	
 	armt = obj.data
