@@ -98,30 +98,18 @@ def import_mesh(name, msh, gtb):
 			group = obj.vertex_groups[joint_name]
 			group.add([i], weight, "REPLACE")
 	return obj
-
-def apply_bind_pose_matrix(armt, bone_idx, used, parent_list, bone_mat_list):
-	bone = armt.edit_bones[bone_idx]
-	if used[bone_idx]:
-		return bone
-	x, y, z = bone_mat_list[16 * bone_idx + 12: 16 * bone_idx + 15]
-	if parent_list[bone_idx] == -1:
-		bone.head = (x, z, y)
-	else:
-		parent_bone = apply_bind_pose_matrix(armt, parent_list[bone_idx], used,
-											 parent_list, bone_mat_list)
-		bone.head = (x + parent_bone.head[0], z + parent_bone.head[1],
-					 y + parent_bone.head[2])
-	bone.tail = bone.head
-	bone.use_connect = False
-	used[bone_idx] = True
-	return bone
-
-def import_armature(gtb):	
+		
+def import_armature(gtb):
 	skeleton = gtb["skeleton"]
 	parent_list = skeleton["parent"]
-	bone_mat_list = skeleton["matrix"]
+	bone_mat_list = convert_to_native_matrix(skeleton["matrix"])
 	bone_name_list = skeleton["name"]
 	bone_num = len(parent_list)
+	
+	# calculate local to world matrix
+	world_mat_list = [None] * bone_num
+	for i in range(bone_num):
+		calc_local_to_world_matrix(i, bone_mat_list, parent_list, world_mat_list)
 	
 	armature_name = "armat"
 	
@@ -137,33 +125,51 @@ def import_armature(gtb):
 	
 	bpy.ops.object.mode_set(mode='EDIT')
 
-	# TODO: need to apply the full matrix
 	used = [False] * bone_num
 	for bone_idx in range(bone_num):
 		bone_name = bone_name_list[bone_idx]
 		bone = armt.edit_bones.new(bone_name)
-	for i in range(bone_num):
-		apply_bind_pose_matrix(armt, i, used, parent_list, bone_mat_list)
+		bone.use_connect = False
+		loc, rot, scale = world_mat_list[bone_idx].decompose()
+		bone.head = (loc.x, loc.z, loc.y)
+		axis, angle = rot.to_axis_angle()
+		d = axis.copy()
+		d.normalize()
+		loc += d
+		bone.tail = (loc.x, loc.z, loc.y)
+		bone.roll = -angle
 		
-	is_leaf = [True] * bone_num
-	for bidx, pidx in enumerate(parent_list):
-		bone = armt.edit_bones[bidx]
-		if pidx == -1:
+	for bone_idx in range(bone_num):
+		bone = armt.edit_bones[bone_idx]
+		if parent_list[bone_idx] == -1:
 			bone.parent = None
 		else:
-			bone.parent = armt.edit_bones[pidx]
-			bone.parent.tail = bone.head
-			is_leaf[pidx] = False
-	for bidx in range(bone_num):
-		bone = armt.edit_bones[bidx]
-		if is_leaf[bidx]:
-			parent = armt.edit_bones[parent_list[bidx]]
-			d = parent.tail - parent.head
-			d.normalize()
-			bone.tail = bone.head + d * 0.1
-	for bidx in range(bone_num):
-		bone = armt.edit_bones[bidx]
-		if bone.head == bone.tail:
-			bone.tail += mathutils.Vector((0.0, -0.1, 0.0))
+			bone.parent = armt.edit_bones[parent_list[bone_idx]]
 	bpy.ops.object.mode_set()
 	return obj
+
+# convert flattened array to native blender matrix, i.e. mathutils.Matrix
+def convert_to_native_matrix(mat_list):
+	matrices = []
+	for i in range(0, len(mat_list), 16):
+		native_mat = mathutils.Matrix([
+			mat_list[i + 0 : i + 4],
+			mat_list[i + 4 : i + 8],
+			mat_list[i + 8 : i + 12],
+			mat_list[i + 12: i + 16],
+		])
+		# blender uses column major order!
+		native_mat.transpose()
+		matrices.append(native_mat)
+	return matrices
+
+# In blender, head, tail, and axis are specified in world space coordinate, we have
+# to calculate the local space to world space matrix.
+def calc_local_to_world_matrix(i, local_mat, parent, result):
+	if result[i] is not None:
+		return
+	if parent[i] == -1:
+		result[i] = local_mat[i]
+		return
+	calc_local_to_world_matrix(parent[i], local_mat, parent, result)
+	result[i] = result[parent[i]] * local_mat[i]
