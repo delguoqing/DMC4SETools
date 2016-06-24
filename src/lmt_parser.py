@@ -1,5 +1,6 @@
 import sys
 import struct
+import json
 import util
 
 # keyframe types
@@ -33,7 +34,7 @@ class LMT(object):
 		# motion count
 		motion_num = getter.get("H")
 		# motion list
-		motion_list = []
+		self.motion_list = motion_list = []
 		motion_offset_list = getter.get("%dI" % motion_num, force_tuple=True)
 		for motion_offset in motion_offset_list:
 			if motion_offset == 0:
@@ -66,8 +67,8 @@ class motion(object):
 		offset_34 = getter.get("I")
 		offset_38 = getter.get("I")
 		
+		self.track_list = track_list = []
 		if (field_33 & 1) == 0:
-			track_list = []
 			lmt.seek(track_off)
 			for track_index in xrange(track_num):
 				print "track offset = 0x%x" % (track_off + track_index * track.SIZE)
@@ -75,6 +76,8 @@ class motion(object):
 				_track = track()
 				_track.read(lmt.block(track.SIZE), lmt)
 				track_list.append(_track)
+		else:
+			print "[WARNING] not skeletal animation!"
 		
 		if offset_34 != 0:
 			print "offset_34 = 0x%x, flag=%d" % (offset_34, (field_33 & 2 == 0))
@@ -101,16 +104,16 @@ class track(object):
 		# keyframe type
 		key_type = flag_0 & 0xFF
 		# transformation type
-		trans_type = (flag_0 >> 8) & 0xFF
+		self.trans_type = trans_type = (flag_0 >> 8) & 0xFF
 		# unknown
 		type_2 = (flag_0 >> 16) & 0xFF
 		# bone id
-		bone_id = (flag_0 >> 24)
+		self.bone_id = bone_id = (flag_0 >> 24)
 		
 		float_4 = getter.get("f")
 		keyframes_size = getter.get("I")
 		keyframe_offset = getter.get("I")		
-		frame_0 = getter.get("4f")
+		self.default_value = frame_0 = getter.get("4f")
 		
 		range_offset = getter.get("I")
 		if range_offset != 0:
@@ -122,6 +125,7 @@ class track(object):
 		# keyframe data are stored in a fairly compact format
 		if keyframe_offset != 0:
 			def print_keyframe(i, t, v0, v1, v2, v3):
+				return
 				print "\tt=%d, eval=(%f, %f, %f, %f)" % (t, v0, v1, v2, v3)
 				
 			print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
@@ -337,6 +341,26 @@ def parse(lmt_path):
 	lmt.read(getter)
 	
 	f.close()
-
+	
+	# dump to gtba format
+	# 	poses: will be imported into pose library, the 1st pose will be set as a default
+	#		   pose which is also a very convenient way to debug your exporter code.
+	# 	animations: will be imported as actions
+	gtba = {
+		"pose": {},
+		"animations": {},
+	}
+	default_pose = {}
+	for track in lmt.motion_list[0].track_list:
+		if track.trans_type in MODEL_TRANS:
+			continue
+		bone_trans = default_pose.setdefault(track.bone_id, [None, None, None])
+		i = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
+		bone_trans[i] = track.default_value
+	gtba["pose"]["default"] = default_pose
+	f = open("objs/motion.gtba", "w")
+	json.dump(gtba, f, indent=2, sort_keys=True)
+	f.close()
+		
 if __name__ == '__main__':
 	parse(sys.argv[1])

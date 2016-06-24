@@ -3,7 +3,7 @@ bl_info = {
 	"author": "Qing Guo",
 	"blender": (2, 76, 0),
 	"location": "File > Import-Export",
-	"description": "Import GTB mesh file.",
+	"description": "Import GTB files.",
 	"warning": "",
 	"category": "Import-Export"}
 
@@ -22,7 +22,7 @@ from bpy.props import (CollectionProperty, StringProperty, BoolProperty, EnumPro
 class ImportGTB(bpy.types.Operator, ImportHelper):
 	"""Load a GTB mesh file."""
 	bl_idname = "import_mesh.gtb"
-	bl_label = "Import GTB"
+	bl_label = "Import GTB model"
 	bl_options = {'UNDO'}
 
 	files = CollectionProperty(name="File Path",
@@ -51,8 +51,42 @@ class ImportGTB(bpy.types.Operator, ImportHelper):
 
 		return {'FINISHED'}
 
+class ImportGTBA(bpy.types.Operator, ImportHelper):
+	"""Load a GTB animation file."""
+	bl_idname = "import_animation.gtb"
+	bl_label = "Import GTB animation"
+	bl_options = {'UNDO'}
+
+	files = CollectionProperty(name="File Path",
+						  description="File path used for importing the GTB animation file",
+						  type=bpy.types.OperatorFileListElement)
+
+	directory = StringProperty()
+
+	filename_ext = ".gtba"
+	filter_glob = StringProperty(default="*.gtba", options={'HIDDEN'})
+
+	def execute(self, context):
+		armature = None
+		for obj in context.selected_objects:
+			if obj.get("bone_mapping"):
+				armature = obj
+				break
+		
+		if armature is None:
+			self.report({'ERROR'}, "No GTB armature is selected!")
+			return {'FINISHED'}
+		
+		path = os.path.join(self.directory, self.files[0].name)
+
+		from . import gtba_importer
+		gtba_importer.import_gtba(path, armature)
+
+		return {'FINISHED'}
+	
 def menu_func_import(self, context):
 	self.layout.operator(ImportGTB.bl_idname, text="Game To Blender Mesh (.gtb)")
+	self.layout.operator(ImportGTBA.bl_idname, text="Game To Blender Animation (.gtba)")
 		
 def register():
 	bpy.utils.register_module(__name__)

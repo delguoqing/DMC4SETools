@@ -11,3 +11,6 @@ src/mfx_log.txt
 *.dae
 *.gtb
 src/model_log.txt
+src/lmt_log.txt
+src/mod_log.txt
+*.gtba
