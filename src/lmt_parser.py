@@ -114,6 +114,7 @@ class track(object):
 		keyframes_size = getter.get("I")
 		keyframe_offset = getter.get("I")		
 		self.default_value = frame_0 = getter.get("4f")
+		self.keys = []
 		
 		range_offset = getter.get("I")
 		if range_offset != 0:
@@ -121,180 +122,49 @@ class track(object):
 			lmt.seek(range_offset)
 			range_scales = lmt.get("4f")
 			range_bases = lmt.get("4f")
+		else:
+			range_scales = range_bases = None
 		
 		# keyframe data are stored in a fairly compact format
 		if keyframe_offset != 0:
-			def print_keyframe(i, t, v0, v1, v2, v3):
-				return
-				print "\tt=%d, eval=(%f, %f, %f, %f)" % (t, v0, v1, v2, v3)
-				
+			def print_keyframe(i, f, v0, v1, v2, v3):
+				print "\tframe=%d, eval=(%f, %f, %f, %f)" % (t, v0, v1, v2, v3)
 			print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
 				keyframe_offset, keyframes_size, key_type
 			)
 			lmt.seek(keyframe_offset)
 			keyframes = lmt.block(keyframes_size)
 			if key_type == POS_XYZ_FLOAT_T32:
-				assert keyframes_size % 16 == 0
-				keyframe_num = keyframes_size / 16
-				for i in xrange(keyframe_num):
-					v0, v1, v2, t = keyframes.get("fffI")
-					print_keyframe(i, t, v0, v1, v2, 0.0)
+				self.keys = self.parse_keyframes_POS_XYZ_FLOAT_T32(keyframes, range_scales, range_bases)
 			elif key_type == POS_XYZT16:
-				assert keyframes_size % 8 == 0
-				keyframe_num = keyframes_size / 8
-				FAC = struct.unpack(">f", "\x37\x80\x08\x01")[0]
-				for i in xrange(keyframe_num):
-					v0, v1, v2, t = keyframes.get("HHHH")
-					v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
-					v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
-					v2 = (v2 - 8) * FAC * range_scales[2] + range_bases[2]
-					print_keyframe(i, t, v0, v1, v2, 0.0)
+				self.keys = self.parse_keyframes_POS_XYZT16(keyframes, range_scales, range_bases)
 			elif key_type == POS_XYZT8:
-				assert keyframes_size % 4 == 0
-				keyframe_num = keyframes_size / 4
-				FAC = struct.unpack(">f", "\x3B\x88\x88\x89")[0]
-				for i in xrange(keyframe_num):
-					v0, v1, v2, t = keyframes.get("BBBB")
-					v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
-					v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
-					v2 = (v2 - 8) * FAC * range_scales[2] + range_bases[2]
-					print_keyframe(i, t, v0, v1, v2, 0.0)
+				self.keys = self.parse_keyframes_POS_XYZT8(keyframes, range_scales, range_bases)
 			elif key_type == ROT_XYZW14_T8:
-				assert keyframes_size % 8 == 0
-				keyframe_num = keyframes_size / 8
-				FAC = struct.unpack(">f", "\x38\x80\x00\x00")[0]
-				for i in xrange(keyframe_num):
-					q = keyframes.get("Q")
-					v3 = ((q >> 0) & 0x3FFF) << 2
-					if v3 & 0x8000: v3 -= (1 << 16)
-					v3 *= FAC
-					v2 = ((q >> 14) & 0x3FFF) << 2
-					if v2 & 0x8000: v2 -= (1 << 16)
-					v2 *= FAC
-					v1 = ((q >> 28) & 0x3FFF) << 2
-					if v1 & 0x8000: v1 -= (1 << 16)
-					v1 *= FAC
-					v0 = ((q >> 42) & 0x3FFF) << 2
-					if v0 & 0x8000: v0 -= (1 << 16)
-					v0 *= FAC
-					t = (q >> 56) & 0xFF
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_XYZW14_T8(keyframes, range_scales, range_bases)
 			elif key_type == ROT_XYZW7_T4:
-				assert keyframes_size % 4 == 0
-				keyframe_num = keyframes_size / 4
-				FAC = struct.unpack(">f", "\x3C\x12\x49\x25")[0]
-				for i in xrange(keyframe_num):
-					v = keyframes.get("I")
-					t = (v >> 28) & 0xF
-					v0 = ((v >> 0 & 0x7F) - 8) * FAC * range_scales[0] + range_bases[0]
-					v1 = ((v >> 7 & 0x7F) - 8) * FAC * range_scales[1] + range_bases[1]
-					v2 = ((v >> 14 & 0x7F) - 8) * FAC * range_scales[2] + range_bases[2]
-					v3 = ((v >> 21 & 0x7F) - 8) * FAC * range_scales[3] + range_bases[3]
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_XYZW7_T4(keyframes, range_scales, range_bases)
 			elif key_type == ROT_XW14_T4:
-				assert keyframes_size % 4 == 0
-				keyframe_num = keyframes_size / 4
-				FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
-				for i in xrange(keyframe_num):
-					v = keyframes.get("I")
-					t = (v >> 28) & 0xF
-					v0 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[0] + range_bases[0]
-					v1 = range_bases[1]
-					v2 = range_bases[2]
-					v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_XW14_T4(keyframes, range_scales, range_bases)
 			elif key_type == ROT_YW14_T4:
-				assert keyframes_size % 4 == 0
-				keyframe_num = keyframes_size / 4
-				FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
-				for i in xrange(keyframe_num):
-					v = keyframes.get("I")
-					t = (v >> 28) & 0xF
-					v0 = range_bases[0]
-					v1 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[1] + range_bases[1]
-					v2 = range_bases[2]
-					v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_YW14_T4(keyframes, range_scales, range_bases)
 			elif key_type == ROT_ZW14_T4:
-				assert keyframes_size % 4 == 0
-				keyframe_num = keyframes_size / 4
-				FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
-				for i in xrange(keyframe_num):
-					v = keyframes.get("I")
-					t = (v >> 28) & 0xF
-					v0 = range_bases[0]
-					v1 = range_bases[1]
-					v2 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[2] + range_bases[2]
-					v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_ZW14_T4(keyframes, range_scales, range_bases)
 			elif key_type == ROT_XYZW11_T4:
-				assert keyframes_size % 6 == 0
-				keyframe_num = keyframes_size / 6
-				FAC = struct.unpack(">f", "\x3A\x01\x02\x04")[0]
-				for i in xrange(keyframe_num):
-					v = keyframes.get("HHH")
-					v0 = ((v[0] & 0x7FF) - 8) * FAC * range_scales[0] + range_bases[0]
-					v1 = ((((v[0] >> 11) << 6) | (v[1] & 0x3F)) - 8) * FAC * range_scales[1] + range_bases[1]
-					v2 = ((((v[1] >> 6) << 1) | (v[2] & 1)) - 8) * FAC * range_scales[2] + range_bases[2]
-					v3 = (((v[2] >> 1) & 0x7FF) - 8) * FAC * range_scales[3] + range_bases[3]
-					t = (v[2] >> 12)
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_XYZW11_T4(keyframes, range_scales, range_bases)
 			elif key_type == ROT_XYZW9_T4:
-				assert keyframes_size % 5 == 0
-				keyframe_num = keyframes_size / 5
-				FAC = struct.unpack(">f", "\x3B\x04\x21\x08")[0]
-				for i in xrange(keyframe_num):
-					v = keyframes.get("5B")
-					v0 = (((v[0] << 1) | (v[1] & 1)) - 8) * FAC * range_scales[0] + range_bases[0]
-					v1 = ((((v[1] >> 1) << 2) | v[2] & 0x3) - 8) * FAC * range_scales[1] + range_bases[1]
-					v2 = ((((v[2] >> 2) << 3) | (v[3] & 0x7)) - 8) * FAC * range_scales[2] + range_bases[2]
-					v3 = ((((v[3] >> 3) << 4) | (v[4] & 0xF)) - 8) * FAC * range_scales[3] + range_bases[3]
-					t = (v[2] >> 12)
-					# normalize
-					length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
-					v0 /= length
-					v1 /= length
-					v2 /= length
-					v3 /= length
-					print_keyframe(i, t, v0, v1, v2, v3)
+				self.keys = self.parse_keyframes_ROT_XYZW9_T4(keyframes, range_scales, range_bases)
 			else:
 				assert False, "unsupported keyframe packing type! %d" % key_type
+			f = 0
+			for i, (t, x, y, z, w) in enumerate(self.keys):
+				self.keys[i] = (f, x, y, z, w)
+			 	print_keyframe(i, f, x, y, z, w)
+				f += t
+		else:
+			key = list(self.default_value)
+			key.insert(0, 0)
+			self.keys.append(key)
 				
 		print "track: key_type=%d, trans_type=%d, type_2=%d, bone_id=%d, float_4=%f" % (
 			key_type, trans_type, type_2, bone_id, float_4)
@@ -314,6 +184,206 @@ class track(object):
 		if bone_id == 255:
 			assert trans_type in MODEL_TRANS
 
+	def parse_keyframes_ROT_XYZW9_T4(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 5 == 0
+		keyframe_num = keyframes_size / 5
+		FAC = struct.unpack(">f", "\x3B\x04\x21\x08")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v = keyframes.get("5B")
+			v0 = (((v[0] << 1) | (v[1] & 1)) - 8) * FAC * range_scales[0] + range_bases[0]
+			v1 = ((((v[1] >> 1) << 2) | v[2] & 0x3) - 8) * FAC * range_scales[1] + range_bases[1]
+			v2 = ((((v[2] >> 2) << 3) | (v[3] & 0x7)) - 8) * FAC * range_scales[2] + range_bases[2]
+			v3 = ((((v[3] >> 3) << 4) | (v[4] & 0xF)) - 8) * FAC * range_scales[3] + range_bases[3]
+			t = (v[2] >> 12)
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys
+
+	def parse_keyframes_ROT_XYZW11_T4(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 6 == 0
+		keyframe_num = keyframes_size / 6
+		keys = []
+		FAC = struct.unpack(">f", "\x3A\x01\x02\x04")[0]
+		for i in xrange(keyframe_num):
+			v = keyframes.get("HHH")
+			v0 = ((v[0] & 0x7FF) - 8) * FAC * range_scales[0] + range_bases[0]
+			v1 = ((((v[0] >> 11) << 6) | (v[1] & 0x3F)) - 8) * FAC * range_scales[1] + range_bases[1]
+			v2 = ((((v[1] >> 6) << 1) | (v[2] & 1)) - 8) * FAC * range_scales[2] + range_bases[2]
+			v3 = (((v[2] >> 1) & 0x7FF) - 8) * FAC * range_scales[3] + range_bases[3]
+			t = (v[2] >> 12)
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys
+
+	def parse_keyframes_ROT_ZW14_T4(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 4 == 0
+		keyframe_num = keyframes_size / 4
+		FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v = keyframes.get("I")
+			t = (v >> 28) & 0xF
+			v0 = range_bases[0]
+			v1 = range_bases[1]
+			v2 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[2] + range_bases[2]
+			v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys
+
+	def parse_keyframes_ROT_YW14_T4(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 4 == 0
+		keyframe_num = keyframes_size / 4
+		FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v = keyframes.get("I")
+			t = (v >> 28) & 0xF
+			v0 = range_bases[0]
+			v1 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[1] + range_bases[1]
+			v2 = range_bases[2]
+			v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys	
+
+	def parse_keyframes_ROT_XW14_T4(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 4 == 0
+		keyframe_num = keyframes_size / 4
+		FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v = keyframes.get("I")
+			t = (v >> 28) & 0xF
+			v0 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[0] + range_bases[0]
+			v1 = range_bases[1]
+			v2 = range_bases[2]
+			v3 = (((v >> 14) & 0x3FFF) - 8) * FAC * range_scales[3] + range_bases[3]
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys
+	
+	def parse_keyframes_ROT_XYZW7_T4(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 4 == 0
+		keyframe_num = keyframes_size / 4
+		FAC = struct.unpack(">f", "\x3C\x12\x49\x25")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v = keyframes.get("I")
+			t = (v >> 28) & 0xF
+			v0 = ((v >> 0 & 0x7F) - 8) * FAC * range_scales[0] + range_bases[0]
+			v1 = ((v >> 7 & 0x7F) - 8) * FAC * range_scales[1] + range_bases[1]
+			v2 = ((v >> 14 & 0x7F) - 8) * FAC * range_scales[2] + range_bases[2]
+			v3 = ((v >> 21 & 0x7F) - 8) * FAC * range_scales[3] + range_bases[3]
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys
+
+	def parse_keyframes_ROT_XYZW14_T8(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 8 == 0
+		keyframe_num = keyframes_size / 8
+		FAC = struct.unpack(">f", "\x38\x80\x00\x00")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			q = keyframes.get("Q")
+			v3 = ((q >> 0) & 0x3FFF) << 2
+			if v3 & 0x8000: v3 -= (1 << 16)
+			v3 *= FAC
+			v2 = ((q >> 14) & 0x3FFF) << 2
+			if v2 & 0x8000: v2 -= (1 << 16)
+			v2 *= FAC
+			v1 = ((q >> 28) & 0x3FFF) << 2
+			if v1 & 0x8000: v1 -= (1 << 16)
+			v1 *= FAC
+			v0 = ((q >> 42) & 0x3FFF) << 2
+			if v0 & 0x8000: v0 -= (1 << 16)
+			v0 *= FAC
+			t = (q >> 56) & 0xFF
+			# normalize
+			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
+			v0 /= length
+			v1 /= length
+			v2 /= length
+			v3 /= length
+			keys.append((t, v0, v1, v2, v3))
+		return keys
+
+	def parse_keyframes_POS_XYZT8(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 4 == 0
+		keyframe_num = keyframes_size / 4
+		FAC = struct.unpack(">f", "\x3B\x88\x88\x89")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v0, v1, v2, t = keyframes.get("BBBB")
+			v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
+			v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
+			v2 = (v2 - 8) * FAC * range_scales[2] + range_bases[2]
+			keys.append((t, v0, v1, v2, 0.0))
+		return keys
+	
+	def parse_keyframes_POS_XYZT16(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 8 == 0
+		keyframe_num = keyframes_size / 8
+		FAC = struct.unpack(">f", "\x37\x80\x08\x01")[0]
+		keys = []
+		for i in xrange(keyframe_num):
+			v0, v1, v2, t = keyframes.get("HHHH")
+			v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
+			v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
+			v2 = (v2 - 8) * FAC * range_scales[2] + range_bases[2]
+			keys.append((t, v0, v1, v2, 0.0))
+		return keys
+
+	def parse_keyframes_POS_XYZ_FLOAT_T32(self, keyframes, range_scales, range_bases):
+		keyframes_size = keyframes.size
+		assert keyframes_size % 16 == 0
+		keyframe_num = keyframes_size / 16
+		keys = []
+		for i in xrange(keyframe_num):
+			v0, v1, v2, t = keyframes.get("fffI")
+			keys.append((t, v0, v1, v2, 0.0))
+		return keys
+	
 class struc_8(object):
 	
 	SIZE = 0x120
@@ -332,7 +402,7 @@ class struc_10(object):
 	def read(self, getter):
 		# offset_8
 		pass
-	
+
 def parse(lmt_path):
 	f = open(lmt_path, "rb")
 	getter = util.get_getter(f, "<")
@@ -358,6 +428,17 @@ def parse(lmt_path):
 		i = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
 		bone_trans[i] = track.default_value
 	gtba["pose"]["default"] = default_pose
+	
+	for i, motion in enumerate(lmt.motion_list):
+		motion_name = "motion_%d" % i
+		motion_data = gtba["animations"][motion_name] = {}
+		for track in motion.track_list:
+			if track.trans_type in MODEL_TRANS:
+				continue
+			bone_trans = motion_data.setdefault(track.bone_id, [None, None, None])
+			j = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
+			bone_trans[j] = track.keys
+		
 	f = open("objs/motion.gtba", "w")
 	json.dump(gtba, f, indent=2, sort_keys=True)
 	f.close()
