@@ -66,10 +66,16 @@ def apply_pose(armature, pose):
 		pose_bone = pose_bones[bone_index]
 		if loc is not None:
 			pose_bone.location = mathutils.Vector(loc[:3])
+		else:
+			pose_bone.location = mathutils.Vector([0, 0, 0])
 		if rot is not None:
 			# In blender, quaternion is stored in order of w, x, y, z
 			pose_bone.rotation_quaternion = mathutils.Quaternion(
 				[rot[3], rot[0], rot[1], rot[2]]
 			)
+		else:
+			pose_bone.rotation_quaternion = mathutils.Quaternion([0, 0, 1, 0])
 		if scale is not None:
 			pose_bone.scale = mathutils.Vector(scale[:3])
+		else:
+			pose_bone.scale = mathutils.Vector([1, 1, 1])

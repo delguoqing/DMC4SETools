@@ -39,7 +39,7 @@ def import_mesh(name, msh, gtb):
 	# vertices
 	for i in range(msh["vertex_num"]):
 		x, y, z = msh["position"][i * 3: i * 3 + 3]
-		bm.verts.new((x, z, y))
+		bm.verts.new((x, -z, y))
 	ENSURE_LUT(bm.verts)
 	# faces
 	used_faces = set()
@@ -147,8 +147,8 @@ def import_armature(gtb):
 		tail = mathutils.Vector([0.0, 1.0 * BONE_LENGTH, 0.0, 1.0])
 		head_world = world_mat * head
 		tail_world = world_mat * tail
-		bone.head = (head_world.x, head_world.z, head_world.y)
-		bone.tail = (tail_world.x, tail_world.z, tail_world.y)
+		bone.head = (head_world.x, -head_world.z, head_world.y)
+		bone.tail = (tail_world.x, -tail_world.z, tail_world.y)
 		_, rot, _ = world_mat.decompose()
 		axis, angle = rot.to_axis_angle()
 		bone.roll = -angle
