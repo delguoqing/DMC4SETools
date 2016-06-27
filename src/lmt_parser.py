@@ -159,7 +159,7 @@ class track(object):
 			f = 0
 			for i, (t, x, y, z, w) in enumerate(self.keys):
 				self.keys[i] = (f, x, y, z, w)
-			 	print_keyframe(i, f, x, y, z, w)
+				print_keyframe(i, f, x, y, z, w)
 				f += t
 		else:
 			key = list(self.default_value)
