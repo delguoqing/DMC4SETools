@@ -14,3 +14,4 @@ src/model_log.txt
 src/lmt_log.txt
 src/mod_log.txt
 *.gtba
+src/unknown_extension.txt

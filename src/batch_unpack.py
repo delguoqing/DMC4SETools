@@ -20,6 +20,6 @@ for top, folders, files in os.walk(root):
 			full_path = os.path.join(top, fname)
 			print "unpacking", full_path
 			rel_path = os.path.relpath(full_path, root)
-			out_root = r"E:\dmc4se_data2"
+			out_root = r"E:\dmc4se_data"
 			# out_root = os.path.join(r"E:\dmc4se_data2", rel_path)[:-len(".arc")]
 			arc_unpack.unpack(full_path, out_root)
