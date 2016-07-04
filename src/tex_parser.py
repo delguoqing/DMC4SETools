@@ -161,17 +161,13 @@ def parse(path):
 		if dxgi == DXGI_FORMAT_R8G8B8A8_UNORM:
 			save_texture_2D(data, width, height, output_name_base + ".png")
 		elif dxgi == DXGI_FORMAT_BC1_UNORM:
-			save_dxt1(data, width, height, output_name_base + ".dds")
+			save_bc1(data, width, height, output_name_base + ".png")
 		elif dxgi == DXGI_FORMAT_BC3_UNORM:
-			save_dxt5(data, width, height, output_name_base + ".dds")
+			save_bc3(data, width, height, output_name_base + ".png")
 		elif dxgi == DXGI_FORMAT_BC4_UNORM:
-			if os.path.exists(output_name_base + ".dds"):
-				os.remove(output_name_base + ".dds")
 			save_bc4(data, width, height, output_name_base + ".png")
 		# most probably used by normal map to take advantages of the `SNORM` part
 		elif dxgi == DXGI_FORMAT_BC5_SNORM:
-			if os.path.exists(output_name_base + ".dds"):
-				os.remove(output_name_base + ".dds")			
 			save_bc5(data, width, height, output_name_base + ".png")
 		else:
 			assert False, "unsupported dxgi format %d" % dxgi
@@ -182,18 +178,103 @@ def save_texture_2D(data, width, height, fname):
 	from PIL import Image
 	image = Image.frombuffer("RGBA", (width, height), data)
 	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
-
-def save_dxt1(data, width, height, fname):
-	header = util.gen_dxt1_header(width, height)
-	fout = open(fname, "wb")
-	fout.write(header + data)
-	fout.close()
 	
-def save_dxt5(data, width, height, fname):
-	header = util.gen_dxt5_header(width, height)
-	fout = open(fname, "wb")
-	fout.write(header + data)
-	fout.close()
+def _unpack_rgb565(rgb565):
+	c = rgb565
+	b = int(((c >> 11) & 0x1F) / 31.0 * 255.0)
+	g = int(((c >>  5) & 0x3F) / 63.0 * 255.0)
+	r = int(((c >>  0) & 0x1F) / 31.0 * 255.0)
+	return r, g, b
+	
+def _decode_bc1_color_block(data):
+	_c1, _c2 = struct.unpack(">HH", data[:4])
+	c1 = list(_unpack_rgb565(_c1))
+	c1.append(255)		
+	c2 = list(_unpack_rgb565(_c2))
+	c2.append(255)					
+	c3 = []
+	c4 = []
+	table = [c1, c2, c3, c4]
+	if _c1 > _c2:	# opaque
+		for v1, v2 in zip(c1, c2):
+			v3 = int((2*v1 + 1*v2)/3.0)
+			v4 = int((1*v1 + 2*v2)/3.0)
+			c3.append(v3)
+			c4.append(v4)
+	else:		# allow 1bit transparency
+		for v1, v2 in zip(c1, c2):
+			v3 = int((1*v1 + 1*v2)/2.0)
+			c3.append(v3)
+		c4.extend([0] * 4)
+	return table
+		
+def _decode_bc3_color_block(data):
+	_c1, _c2 = struct.unpack(">HH", data[:4])
+	c1 = list(_unpack_rgb565(_c1))
+	c2 = list(_unpack_rgb565(_c2))
+	c3 = []
+	c4 = []
+	table = [c1, c2, c3, c4]
+	for v1, v2 in zip(c1, c2):
+		v3 = int((2*v1 + 1*v2)/3.0)
+		v4 = int((1*v1 + 2*v2)/3.0)
+		c3.append(v3)
+		c4.append(v4)
+	return table
+
+def _decode_bc1_index_block(data):
+	iv = struct.unpack(">HH", data[:4])
+	indices = []
+	for v in iv:
+		for i in xrange(8):
+			indices.append( (v >> (i * 2)) & 0x3 )
+	return indices
+			
+def save_bc1(data, width, height, fname):
+	pixel_count = width * height
+	ret = [None] * pixel_count
+	x_nblock = width / 4
+	for block_idx in xrange(len(data) / 8):
+		color_table = _decode_bc1_color_block(data[8 * block_idx: 8 * block_idx + 4])
+		color_indices = _decode_bc1_index_block(data[8 * block_idx + 4: 8 * block_idx + 8])
+		y_start = block_idx / x_nblock
+		x_start = block_idx - x_nblock * y_start
+		x_start *= 4
+		y_start *= 4
+		for i in xrange(16):
+			y = i / 4
+			x = i - y * 4
+			ret[x_start + x + (y_start + y) * width] = color_table[color_indices[i]]
+	buff = ""
+	for r, g, b, a in ret:
+		buff += chr(int(r)) + chr(int(g)) + chr(int(b)) + chr(int(a))
+	from PIL import Image
+	image = Image.frombuffer("RGBA", (width, height), buff)
+	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
+	
+def save_bc3(data, width, height, fname):
+	pixel_count = width * height
+	ret = [None] * pixel_count
+	x_nblock = width / 4
+	for block_idx in xrange(len(data) / 16):
+		a = _bc5_extract_component(data[16 * block_idx: 16 * block_idx + 8])
+		rgb_table = _decode_bc3_color_block(data[16 * block_idx + 8: 16 * block_idx + 12])
+		rgb_indices = _decode_bc1_index_block(data[16 * block_idx + 12: 16 * block_idx + 16])
+		y_start = block_idx / x_nblock
+		x_start = block_idx - x_nblock * y_start
+		x_start *= 4
+		y_start *= 4
+		for i in xrange(16):
+			y = i / 4
+			x = i - y * 4
+			rgb = rgb_table[rgb_indices[i]]
+			ret[x_start + x + (y_start + y) * width] = (rgb[0], rgb[1], rgb[2], a[i])
+	buff = ""
+	for r, g, b, a in ret:
+		buff += chr(int(r)) + chr(int(g)) + chr(int(b)) + chr(int(a))
+	from PIL import Image
+	image = Image.frombuffer("RGBA", (width, height), buff)
+	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
 	
 def _bc5_extract_component(d):
 	red_0 = ord(d[0])
@@ -214,9 +295,15 @@ def _bc5_extract_component(d):
 		lut.append(0)
 		lut.append(255)
 	ret = []
-	v = struct.unpack(">Q", d)[0]
-	for bit in xrange(47, -1, -3):
-		cidx = (v >> (bit - 2)) & 0b111
+	v = 0
+	for i in xrange(2):
+		base = i * 24
+		for j in xrange(3):
+			byte_ = ord(d[2 + i * 3 + j])
+			v |= (byte_ << (base + j * 8))
+	for i in xrange(16):
+		cidx = v & 0b111
+		v >>= 3
 		ret.append(lut[cidx])
 	return ret
 	
@@ -272,10 +359,10 @@ def save_bc4(data, width, height, fname):
 	image.transpose(Image.FLIP_TOP_BOTTOM).save(fname)
 	
 def test_all(test_count=-1):
-	ROM_ROOT = os.path.join(os.environ["DMC4SE_DATA_DIR"], "rom")
-	for top, dirs, files in os.walk(ROM_ROOT):
+	root = os.environ["DMC4SE_DATA_DIR"]
+	for top, dirs, files in os.walk(root):
 		for fname in files:
-			if fname.endswith(".TEX"):
+			if fname.endswith(".tex"):
 				print "-" * 30
 				print "parsing", fname
 				# print "fullpath", os.path.join(top, fname)
