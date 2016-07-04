@@ -181,13 +181,13 @@ def save_texture_2D(data, width, height, fname):
 	
 def _unpack_rgb565(rgb565):
 	c = rgb565
-	b = int(((c >> 11) & 0x1F) / 31.0 * 255.0)
+	r = int(((c >> 11) & 0x1F) / 31.0 * 255.0)
 	g = int(((c >>  5) & 0x3F) / 63.0 * 255.0)
-	r = int(((c >>  0) & 0x1F) / 31.0 * 255.0)
+	b = int(((c >>  0) & 0x1F) / 31.0 * 255.0)
 	return r, g, b
 	
 def _decode_bc1_color_block(data):
-	_c1, _c2 = struct.unpack(">HH", data[:4])
+	_c1, _c2 = struct.unpack("<HH", data[:4])
 	c1 = list(_unpack_rgb565(_c1))
 	c1.append(255)		
 	c2 = list(_unpack_rgb565(_c2))
@@ -209,7 +209,7 @@ def _decode_bc1_color_block(data):
 	return table
 		
 def _decode_bc3_color_block(data):
-	_c1, _c2 = struct.unpack(">HH", data[:4])
+	_c1, _c2 = struct.unpack("<HH", data[:4])
 	c1 = list(_unpack_rgb565(_c1))
 	c2 = list(_unpack_rgb565(_c2))
 	c3 = []
@@ -223,10 +223,10 @@ def _decode_bc3_color_block(data):
 	return table
 
 def _decode_bc1_index_block(data):
-	iv = struct.unpack(">HH", data[:4])
+	iv = struct.unpack("4B", data[:4])
 	indices = []
 	for v in iv:
-		for i in xrange(8):
+		for i in xrange(4):
 			indices.append( (v >> (i * 2)) & 0x3 )
 	return indices
 			
