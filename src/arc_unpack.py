@@ -74,6 +74,7 @@ class_name_to_extension = {
 	"rMotionWind": "mwd",
 	"rSprLayout": "sprmap",
 	"rSoundSourceMSADPCM": "wav",
+	"rSoundSourceOggVorbis": "sngw",
 }
 
 def unpack(fpath, out_root="."):

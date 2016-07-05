@@ -428,9 +428,13 @@ def parse(lmt_path):
 		i = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
 		bone_trans[i] = track.default_value
 	gtba["pose"]["default"] = default_pose
+	# make sure the motions will be sorted as expected when imported
+	motion_count = len(lmt.motion_list)
+	digit_count = len(str(motion_count))
+	motion_name_fmt = "motion_%%0%dd" % digit_count
 	
 	for i, motion in enumerate(lmt.motion_list):
-		motion_name = "motion_%d" % i
+		motion_name = motion_name_fmt % i
 		motion_data = gtba["animations"][motion_name] = {}
 		for track in motion.track_list:
 			if track.trans_type in MODEL_TRANS:
