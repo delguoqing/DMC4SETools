@@ -66,6 +66,11 @@ class ImportGTBA(bpy.types.Operator, ImportHelper):
 	filename_ext = ".gtba"
 	filter_glob = StringProperty(default="*.gtba", options={'HIDDEN'})
 
+	rotation_resample = BoolProperty(
+		name="Resample Rotation",
+		description="Resample Rotation using slerp to ensure 100% correctness.",
+		default=True)
+	
 	def execute(self, context):
 		armature = None
 		for obj in context.selected_objects:
@@ -80,7 +85,7 @@ class ImportGTBA(bpy.types.Operator, ImportHelper):
 		path = os.path.join(self.directory, self.files[0].name)
 
 		from . import gtba_importer
-		gtba_importer.import_gtba(path, armature)
+		gtba_importer.import_gtba(path, armature, self.rotation_resample)
 
 		return {'FINISHED'}
 	
