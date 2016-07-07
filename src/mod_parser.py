@@ -218,7 +218,15 @@ class CModel(object):
 					mat_list.extend(mat.getA1())
 				gtb["skeleton"]["matrix"] = mat_list
 				gtb["bone_id"] = self.bone_id
-				
+				# To support root bone animation, we have to add a 'root' bone
+				gtb["skeleton"]["name"].append("Bone%d" % self.bone_num)
+				for i, parent in enumerate(gtb["skeleton"]["parent"]):
+					if parent == -1:
+						gtb["skeleton"]["parent"][i] = self.bone_num
+				gtb["skeleton"]["parent"].append(-1)
+				mat_list.extend(numpy.identity(4).flatten())
+				gtb["bone_id"].append(255)
+
 		for dp_index in xrange(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
 			vertices = parse_primitives(self, dp_info)

@@ -111,11 +111,11 @@ def import_armature(gtb):
 	
 	# for retargeting
 	if bone_id is None:
-		bone_mapping = dict([(str(i), i) for i in range(bone_num)])
+		bone_mapping = dict([(str(i), bone_name_list[i]) for i in range(bone_num)])
 	else:
 		bone_mapping = {}
 		for idx, _id in enumerate(bone_id):
-			bone_mapping[str(_id)] = idx
+			bone_mapping[str(_id)] = bone_name_list[idx]
 	
 	# calculate local to world matrix
 	world_mat_list = [None] * bone_num
@@ -154,11 +154,13 @@ def import_armature(gtb):
 		bone.roll = -angle
 		
 	for bone_idx in range(bone_num):
-		bone = armt.edit_bones[bone_idx]
+		bone_name = bone_name_list[bone_idx]
+		bone = armt.edit_bones[bone_name]
 		if parent_list[bone_idx] == -1:
 			bone.parent = None
 		else:
-			bone.parent = armt.edit_bones[parent_list[bone_idx]]
+			parent_bone_name = bone_name_list[parent_list[bone_idx]]
+			bone.parent = armt.edit_bones[parent_bone_name]
 	bpy.ops.object.mode_set()
 	return obj
 

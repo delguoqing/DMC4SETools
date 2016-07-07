@@ -34,10 +34,10 @@ def import_action(motion, armature, motion_name, rotation_resample=False):
 	pose_bones = armature.pose.bones
 	for bone_id, v in motion.items():
 		loc, rot, scale = v
-		bone_index = bone_mapping.get(bone_id)
-		if bone_index is None:
+		bone_name = bone_mapping.get(bone_id)
+		if bone_name is None:
 			continue
-		pose_bone = pose_bones[bone_index]
+		pose_bone = pose_bones[bone_name]
 		if loc is None:
 			loc = [[0, 0, 0, 0, 0]]
 		for loc_k in loc:
@@ -77,10 +77,10 @@ def apply_pose(armature, pose):
 	bone_mapping = armature["bone_mapping"]
 	pose_bones = armature.pose.bones
 	for bone_id, (loc, rot, scale) in pose.items():
-		bone_index = bone_mapping.get(bone_id)
-		if bone_index is None:
+		bone_name = bone_mapping.get(bone_id)
+		if bone_name is None:
 			continue
-		pose_bone = pose_bones[bone_index]
+		pose_bone = pose_bones[bone_name]
 		if loc is not None:
 			pose_bone.location = mathutils.Vector(loc[:3])
 		else:

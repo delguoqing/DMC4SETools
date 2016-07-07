@@ -159,7 +159,8 @@ class track(object):
 			f = 0
 			for i, (t, x, y, z, w) in enumerate(self.keys):
 				self.keys[i] = (f, x, y, z, w)
-				print_keyframe(i, f, x, y, z, w)
+				if self.bone_id == 255:
+					print_keyframe(i, f, x, y, z, w)
 				f += t
 		else:
 			key = list(self.default_value)
@@ -437,12 +438,12 @@ def parse(lmt_path):
 		motion_name = motion_name_fmt % i
 		motion_data = gtba["animations"][motion_name] = {}
 		for track in motion.track_list:
-			if track.trans_type in MODEL_TRANS:
-				continue
 			bone_trans = motion_data.setdefault(track.bone_id, [None, None, None])
-			j = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
+			if track.trans_type in MODEL_TRANS:
+				j = [MODEL_POS, MODEL_ROT, MODEL_SCALE].index(track.trans_type)
+			else:
+				j = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
 			bone_trans[j] = track.keys
-		
 	f = open("objs/motion.gtba", "w")
 	json.dump(gtba, f, indent=2, sort_keys=True)
 	f.close()
