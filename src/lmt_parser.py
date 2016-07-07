@@ -128,7 +128,7 @@ class track(object):
 		# keyframe data are stored in a fairly compact format
 		if keyframe_offset != 0:
 			def print_keyframe(i, f, v0, v1, v2, v3):
-				print "\tframe=%d, eval=(%f, %f, %f, %f)" % (t, v0, v1, v2, v3)
+				print "\tframe=%d, eval=(%f, %f, %f, %f)" % (f, v0, v1, v2, v3)
 			print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
 				keyframe_offset, keyframes_size, key_type
 			)
@@ -193,10 +193,10 @@ class track(object):
 		for i in xrange(keyframe_num):
 			v = keyframes.get("5B")
 			v0 = (((v[0] << 1) | (v[1] & 1)) - 8) * FAC * range_scales[0] + range_bases[0]
-			v1 = ((((v[1] >> 1) << 2) | v[2] & 0x3) - 8) * FAC * range_scales[1] + range_bases[1]
+			v1 = ((((v[1] >> 1) << 2) | (v[2] & 0x3)) - 8) * FAC * range_scales[1] + range_bases[1]
 			v2 = ((((v[2] >> 2) << 3) | (v[3] & 0x7)) - 8) * FAC * range_scales[2] + range_bases[2]
 			v3 = ((((v[3] >> 3) << 4) | (v[4] & 0xF)) - 8) * FAC * range_scales[3] + range_bases[3]
-			t = (v[2] >> 12)
+			t = (v[4] >> 4)
 			# normalize
 			length = (v0 ** 2 + v1 ** 2 + v2 ** 2 + v3 ** 2) ** 0.5
 			v0 /= length
