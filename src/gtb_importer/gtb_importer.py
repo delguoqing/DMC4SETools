@@ -109,7 +109,13 @@ def import_armature(gtb):
 	bone_name_list = skeleton["name"]
 	bone_num = len(parent_list)
 	
-	# for retargeting
+	# For animation retargeting
+	# Previously, bone_mapping is a bone_id to bone_index dict. When importing animation,
+	# We first get bone_index from bone_id, then we get the pose_bone from
+	# D.objects['armat'].pose.bones[bone_index], which is not reliable.
+	# D.objects['armat].pose.bones is a blender collection, it can't ensure that the order
+	# that we insert elements is preserved, though it provides a interface of accessing
+	# element by index.
 	if bone_id is None:
 		bone_mapping = dict([(str(i), bone_name_list[i]) for i in range(bone_num)])
 	else:
@@ -137,13 +143,16 @@ def import_armature(gtb):
 	
 	bpy.ops.object.mode_set(mode='EDIT')
 
-	used = [False] * bone_num
 	for bone_idx in range(bone_num):
 		bone_name = bone_name_list[bone_idx]
 		bone = armt.edit_bones.new(bone_name)
 		bone.use_connect = False
 		world_mat = world_mat_list[bone_idx]
 		head = mathutils.Vector([0.0, 0.0, 0.0, 1.0])
+		# In most DCC tools, a bone is visualized so that it has certain length, with a
+		# head and tail, however, it is not the case in a game engine. We can not restore
+		# the tail position once the information get dropped when exporting to a dedicated
+		# format.
 		tail = mathutils.Vector([0.0, 1.0 * BONE_LENGTH, 0.0, 1.0])
 		head_world = world_mat * head
 		tail_world = world_mat * tail
@@ -153,8 +162,7 @@ def import_armature(gtb):
 		axis, angle = rot.to_axis_angle()
 		bone.roll = -angle
 		
-	for bone_idx in range(bone_num):
-		bone_name = bone_name_list[bone_idx]
+	for bone_idx, bone_name in enumerate(bone_name_list):
 		bone = armt.edit_bones[bone_name]
 		if parent_list[bone_idx] == -1:
 			bone.parent = None
