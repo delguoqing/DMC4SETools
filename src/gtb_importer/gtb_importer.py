@@ -6,6 +6,7 @@ import bpy
 import six
 import mathutils
 import json
+import zlib
 
 BONE_LENGTH = 10.0
 
@@ -13,11 +14,24 @@ def ENSURE_LUT(v):
 	if hasattr(v, "ensure_lookup_table"):
 		v.ensure_lookup_table()
 	v.index_update()
-	
+
+def load_raw(filepath):
+	f = open(filepath, "rb")
+	fourcc = f.read(4)
+	if fourcc == b"GTB\x00":
+		uz_bytes = zlib.decompress(f.read())
+		uz_string = uz_bytes.decode("utf-8")
+		gtb = json.loads(uz_string)
+		f.close()
+	else:
+		f.close()
+		f = open(filepath, "r")
+		gtb = json.load(f)
+		f.close()
+	return gtb
+
 def import_gtb(filepath):
-	f = open(filepath, "r")
-	gtb = json.load(f)
-	f.close()
+	gtb = load_raw(filepath)
 	# import armature
 	has_skeleton = bool(gtb.get("skeleton"))
 	if has_skeleton:

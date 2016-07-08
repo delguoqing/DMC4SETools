@@ -8,9 +8,7 @@ import mathutils
 import json
 	
 def import_gtba(filepath, armature, rotation_resample):
-	f = open(filepath, "r")
-	gtb = json.load(f)
-	f.close()
+	gtb = load_raw(filepath)
 	
 	for motion_name, motion in gtb["animations"].items():
 		import_action(motion, armature, motion_name,
@@ -22,6 +20,21 @@ def import_gtba(filepath, armature, rotation_resample):
 		
 	return {'FINISHED'}
 
+def load_raw(filepath):
+	f = open(filepath, "rb")
+	fourcc = f.read(4)
+	if fourcc == b"GTBA":
+		uz_bytes = zlib.decompress(f.read())
+		uz_string = uz_bytes.decode("utf-8")
+		gtb = json.loads(uz_string)
+		f.close()
+	else:
+		f.close()
+		f = open(filepath, "r")
+		gtb = json.load(f)
+		f.close()
+	return gtb
+		
 def import_action(motion, armature, motion_name, rotation_resample=False):
 	action = bpy.data.actions.get(motion_name)
 	if not action:

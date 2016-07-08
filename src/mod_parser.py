@@ -1,3 +1,4 @@
+import zlib
 import os
 import glob
 import shutil
@@ -21,8 +22,12 @@ DUMP_TYPE = DUMP_TYPE_GTB
 DUMP_NORMAL = True
 DUMP_UV = True
 
+IS_SUPPORT_ROOT_BONE_ANIMATION = True
+
 IA_D3D10 = None
 IA_GAME = None
+
+COMPRESS = True
 
 class CDpInfo(object):
 	def __init__(self, n1_block_start_index):
@@ -218,14 +223,15 @@ class CModel(object):
 					mat_list.extend(mat.getA1())
 				gtb["skeleton"]["matrix"] = mat_list
 				gtb["bone_id"] = self.bone_id
-				# To support root bone animation, we have to add a 'root' bone
-				gtb["skeleton"]["name"].append("Bone%d" % self.bone_num)
-				for i, parent in enumerate(gtb["skeleton"]["parent"]):
-					if parent == -1:
-						gtb["skeleton"]["parent"][i] = self.bone_num
-				gtb["skeleton"]["parent"].append(-1)
-				mat_list.extend(numpy.identity(4).flatten())
-				gtb["bone_id"].append(255)
+				# To support root bone animation, we have to add a virtual 'root' bone
+				if IS_SUPPORT_ROOT_BONE_ANIMATION:
+					gtb["skeleton"]["name"].append("Bone%d" % self.bone_num)
+					for i, parent in enumerate(gtb["skeleton"]["parent"]):
+						if parent == -1:
+							gtb["skeleton"]["parent"][i] = self.bone_num
+					gtb["skeleton"]["parent"].append(-1)
+					mat_list.extend(numpy.identity(4).flatten())
+					gtb["bone_id"].append(255)
 
 		for dp_index in xrange(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
@@ -250,8 +256,13 @@ class CModel(object):
 			collada_doc.write(fp)
 			fp.close()
 		elif DUMP_TYPE == DUMP_TYPE_GTB:
-			fp = open("objs/model.gtb", "w")
-			json.dump(gtb, fp, indent=2, sort_keys=True)
+			data = json.dumps(gtb, indent=2, sort_keys=True, ensure_ascii=True)
+			if COMPRESS:
+				fp = open("objs/model.gtb", "wb")
+				fp.write("GTB\x00" + zlib.compress(data))
+			else:
+				fp = open("objs/model.gtb", "w")
+				fp.write(data)
 			fp.close()
 		
 	def read_bone(self, mod):
@@ -744,6 +755,9 @@ def load_input_layouts(d3d10_json, game_json):
 	IA_D3D10 = load_json_object(d3d10_json)
 	IA_GAME = load_json_object(game_json)
 	
+def get_material_name_hash(string):
+	pass
+
 if __name__ == '__main__':
 	# assert verify_sematic_order(input_layout_descs), "sematic name should be in the same order"
 	

@@ -1,7 +1,9 @@
+import os
 import sys
 import struct
 import json
 import util
+import zlib
 
 # keyframe types
 POS_XYZ_FLOAT_T32 = 3
@@ -23,6 +25,8 @@ MODEL_ROT = 3
 MODEL_POS = 4
 MODEL_SCALE = 5
 MODEL_TRANS = (MODEL_ROT, MODEL_POS, MODEL_SCALE)
+
+COMPRESS = True
 
 class LMT(object):
 	
@@ -167,6 +171,9 @@ class track(object):
 			key.insert(0, 0)
 			self.keys.append(key)
 				
+		assert float_4 == 1.0
+		assert type_2 == 0
+		
 		print "track: key_type=%d, trans_type=%d, type_2=%d, bone_id=%d, float_4=%f" % (
 			key_type, trans_type, type_2, bone_id, float_4)
 		if trans_type in (BONE_ROT, MODEL_ROT):
@@ -404,7 +411,7 @@ class struc_10(object):
 		# offset_8
 		pass
 
-def parse(lmt_path):
+def parse(lmt_path, out_path="objs/motion.gtba"):
 	f = open(lmt_path, "rb")
 	getter = util.get_getter(f, "<")
 
@@ -444,9 +451,34 @@ def parse(lmt_path):
 			else:
 				j = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
 			bone_trans[j] = track.keys
-	f = open("objs/motion.gtba", "w")
-	json.dump(gtba, f, indent=2, sort_keys=True)
+			
+	data = json.dumps(gtba, indent=2, sort_keys=True, ensure_ascii=True)
+	if COMPRESS:
+		f = open(out_path, "wb")
+		f.write("GTBA" + zlib.compress(data))
+	else:
+		f = open(out_path, "w")
+		f.write(data)
 	f.close()
-		
+	
+def test_all(test_count=-1):
+	root = os.path.join(os.environ["DMC4SE_DATA_DIR"], "motion")
+	for top, dirs, files in os.walk(root):
+		for fname in files:
+			if fname.endswith(".lmt"):
+				print "-" * 30
+				print "parsing", fname
+				# print "fullpath", os.path.join(top, fname)
+				in_path = os.path.join(top, fname)
+				out_path = in_path.replace(".lmt", ".gtba")
+				parse(in_path, out_path)
+				if test_count > 0:
+					test_count -= 1
+					if test_count <= 0:
+						return
+					
 if __name__ == '__main__':
-	parse(sys.argv[1])
+	if len(sys.argv) > 1:
+		parse(sys.argv[1])
+	else:
+		test_all()
