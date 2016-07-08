@@ -72,6 +72,10 @@ def import_action(motion, armature, motion_name, rotation_resample=False):
 			f = scale_k[0] + 1
 			pose_bone.scale = mathutils.Vector(scale_k[1:4])
 			pose_bone.keyframe_insert("scale", index=-1, frame=f)
+	# force linear interpolation now
+	for fcurve in action.fcurves:
+		for keyframe_point in fcurve.keyframe_points:
+			keyframe_point.interpolation = 'LINEAR'
 
 def apply_pose(armature, pose):
 	bone_mapping = armature["bone_mapping"]
