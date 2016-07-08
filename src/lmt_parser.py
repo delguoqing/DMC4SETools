@@ -428,16 +428,17 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 		"pose": {},
 		"animations": {},
 	}
-	default_pose = {}
-	for track in lmt.motion_list[0].track_list:
-		if track.trans_type in MODEL_TRANS:
-			continue
-		bone_trans = default_pose.setdefault(track.bone_id, [None, None, None])
-		i = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
-		bone_trans[i] = track.default_value
-	gtba["pose"]["default"] = default_pose
-	# make sure the motions will be sorted as expected when imported
 	motion_count = len(lmt.motion_list)
+	default_pose = {}
+	if motion_count > 0:
+		for track in lmt.motion_list[0].track_list:
+			if track.trans_type in MODEL_TRANS:
+				continue
+			bone_trans = default_pose.setdefault(track.bone_id, [None, None, None])
+			i = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
+			bone_trans[i] = track.default_value
+		gtba["pose"]["default"] = default_pose
+	# make sure the motions will be sorted as expected when imported
 	digit_count = len(str(motion_count))
 	motion_name_fmt = "motion_%%0%dd" % digit_count
 	
