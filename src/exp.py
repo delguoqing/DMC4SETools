@@ -2,6 +2,7 @@ import os
 import sys
 import cPickle
 import ctypes
+import win32con
 
 # win32api
 from win32api import OpenProcess, GetProcAddress, GetModuleHandle
@@ -51,16 +52,37 @@ def test_get_func(v):
 	print map(hex, result)
 
 def find_proc_id(proc_name):
+	class PROCESSENTRY32(ctypes.Structure):
+		_fields_ = [
+			("dwSize", wintypes.DWORD, ),
+			("cntUsage", wintypes.DWORD, ),
+			("th32ProcessID", wintypes.DWORD, ),
+			("th32DefaultHeapID", wintypes.ULONG, ),
+			("th32ModuleID", wintypes.DWORD, ),
+			("cntThreads", wintypes.DWORD, ),
+			("th32ParentProcessID", wintypes.DWORD, ),
+			("pcPriClassBase", wintypes.LONG, ),
+			("dwFlags", wintypes.DWORD, ),
+			("szExeFile", wintypes.c_char * win32con.MAX_PATH, )
+		]
 	hSnapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot(2, None)
-	# How do I pass an in/out parameter?
-	lppe = ctypes.windll.kernel32.Process32First(hSnapshot, None)
-	print lppe
+	pe = PROCESSENTRY32()
+	pe.dwSize = 296	
+	has_next = ctypes.windll.kernel32.Process32First(hSnapshot, ctypes.byref(pe))
+	while (has_next):
+		print pe.szExeFile, pe.th32ProcessID
+		has_next = ctypes.windll.kernel32.Process32Next(hSnapshot, ctypes.byref(pe))
+		if pe.szExeFile == proc_name:
+			return pe.th32ProcessID
+	return None
 	
 def dll_inject(proc_id_or_name, dll_path):
 	try:
 		proc_id = int(proc_id_or_name)
 	except ValueError:	# TODO: support proc_name later
-		print "Do not support proc_name yet!"
+		proc_id = find_proc_id(proc_id_or_name)
+	if not proc_id:
+		print "No process can be found!!"
 		return
 	# Attach
 	hHandle = OpenProcess(
@@ -87,13 +109,13 @@ def dll_inject(proc_id_or_name, dll_path):
 	WaitForSingleObject(thread, 0xFFFFFFFF)
 
 if __name__ == '__main__':
-	exp_id = 2
+	exp_id = 1
 	
 	if exp_id == 0:
 		v = int(sys.argv[1], 16)
 		test_get_func(v)
 	elif exp_id == 1:
-		dll_inject(14644, r"D:\Program Files (x86)\WinHex\zlib1.dll")
+		dll_inject("DevilMayCry4SpecialEdition.exe", r"D:\Program Files (x86)\WinHex\zlib1.dll")
 	elif exp_id == 2:
 		find_proc_id("DevilMayCry4SpecialEdition.exe")
 	
