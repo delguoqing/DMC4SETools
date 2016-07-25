@@ -81,6 +81,7 @@ def dll_inject(proc_id_or_name, dll_path):
 		proc_id = int(proc_id_or_name)
 	except ValueError:	# TODO: support proc_name later
 		proc_id = find_proc_id(proc_id_or_name)
+		print "proc_name: %s, proc_id: %r" % (proc_id_or_name, proc_id)
 	if not proc_id:
 		print "No process can be found!!"
 		return
@@ -90,7 +91,6 @@ def dll_inject(proc_id_or_name, dll_path):
 		 PROCESS_VM_WRITE | PROCESS_VM_READ),
 		FALSE, proc_id
 	)
-	print hHandle, int(hHandle)
 	# Allocate memory
 	full_path = os.path.normpath(os.path.abspath(dll_path))
 	mem_addr = VirtualAllocEx(wintypes.HANDLE(int(hHandle)),
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 		v = int(sys.argv[1], 16)
 		test_get_func(v)
 	elif exp_id == 1:
-		dll_inject("DevilMayCry4SpecialEdition.exe", r"D:\Program Files (x86)\WinHex\zlib1.dll")
+		dll_inject("DevilMayCry4SpecialEdition.exe", r"C:\Users\guoqing\Documents\Visual Studio 2012\Projects\dmc4se_injection\Debug\dmc4se_injection.dll")
 	elif exp_id == 2:
 		find_proc_id("DevilMayCry4SpecialEdition.exe")
 	
