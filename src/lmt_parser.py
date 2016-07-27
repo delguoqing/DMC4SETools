@@ -58,10 +58,6 @@ class motion(object):
 	
 	def read(self, getter, lmt):
 		get = getter.get
-		#print get("IIIi")
-		#print get("f4BfI")
-		#print get("IIIf")
-		#print get("4BII")
 		
 		track_off = getter.get("I")
 		track_num = getter.get("I")

@@ -17,7 +17,6 @@ DUMP_TYPE_NONE = 0
 DUMP_TYPE_OBJ = 1
 DUMP_TYPE_COLLADA = 2
 DUMP_TYPE_GTB = 3
-DUMP_TYPE = DUMP_TYPE_GTB
 
 DUMP_NORMAL = True
 DUMP_UV = True
@@ -199,72 +198,6 @@ class CModel(object):
 		self.read_not_used(mod)
 		mod.assert_end()
 		
-		print "-" * 30
-		print "Parsing Primitives:"
-		
-		# init dump
-		if DUMP_TYPE == DUMP_TYPE_COLLADA:
-			collada_doc = collada.Collada()
-			root_node = collada.scene.Node("Root", children=[])
-			scene = collada.scene.Scene("Scene", [root_node])
-			collada_doc.scenes.append(scene)
-			collada_doc.scene = scene
-		elif DUMP_TYPE == DUMP_TYPE_GTB:
-			gtb = {
-				"objects": {},
-			}
-			if self.bone_num > 0:
-				gtb["skeleton"] = {}
-				gtb["skeleton"]["name"] = map(lambda v: "Bone%d" % v, range(self.bone_num))
-				gtb["skeleton"]["parent"] = map(lambda v: v == 255 and -1 or v,
-												self.bone_parent)
-				mat_list = []
-				for mat in self.bone_mat:
-					mat_list.extend(mat.getA1())
-				gtb["skeleton"]["matrix"] = mat_list
-				gtb["bone_id"] = self.bone_id
-				# To support root bone animation, we have to add a virtual 'root' bone
-				if IS_SUPPORT_ROOT_BONE_ANIMATION:
-					gtb["skeleton"]["name"].append("Bone%d" % self.bone_num)
-					for i, parent in enumerate(gtb["skeleton"]["parent"]):
-						if parent == -1:
-							gtb["skeleton"]["parent"][i] = self.bone_num
-					gtb["skeleton"]["parent"].append(-1)
-					mat_list.extend(numpy.identity(4).flatten())
-					gtb["bone_id"].append(255)
-
-		for dp_index in xrange(self.dp_num):
-			dp_info = self.dp_info_list[dp_index]
-			vertices = parse_primitives(self, dp_info)
-			indices = self.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
-			util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
-			indices = map(lambda v: v - dp_info.index_min, indices)
-			assert dp_info.bounding_box_id in self.id_2_bounding_box
-			if DUMP_TYPE == DUMP_TYPE_OBJ:
-				obj_str = dump_obj(vertices, indices)
-				fout = open("objs/dp_%d.obj" % dp_index, "w")
-				fout.write(obj_str)
-				fout.close()
-			elif DUMP_TYPE == DUMP_TYPE_COLLADA:
-				dump_collada(vertices, indices, collada_doc)
-			elif DUMP_TYPE == DUMP_TYPE_GTB:
-				dump_gtb(vertices, indices, gtb)
-		
-		# finish up dump
-		if DUMP_TYPE == DUMP_TYPE_COLLADA:
-			fp = open("objs/model.dae", "w")
-			collada_doc.write(fp)
-			fp.close()
-		elif DUMP_TYPE == DUMP_TYPE_GTB:
-			data = json.dumps(gtb, indent=2, sort_keys=True, ensure_ascii=True)
-			if COMPRESS:
-				fp = open("objs/model.gtb", "wb")
-				fp.write("GTB\x00" + zlib.compress(data))
-			else:
-				fp = open("objs/model.gtb", "w")
-				fp.write(data)
-			fp.close()
-		
 	def read_bone(self, mod):
 		if self.bone_num <= 0:
 			return
@@ -332,6 +265,7 @@ class CModel(object):
 			print mat
 			print
 		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + 0x100)
+		# bone_id to bone_inex, meaning that max_bone_num = 256
 		mod.skip(0x100)
 		
 		# The final vertex position will sometimes be encoded in format
@@ -441,6 +375,83 @@ class CModel(object):
 		mod.seek(self.unk_offset)
 		n7 = mod.get("I")
 		assert n7 == 0
+		
+	def dump(self, out_path):
+		print "-" * 30
+		print "Parsing Primitives:"
+		
+		if out_path.endswith(".dae"):
+			dump_type = DUMP_TYPE_COLLADA
+		elif out_path.endswith(".gtb"):
+			dump_type = DUMP_TYPE_GTB
+		elif out_path.endswith(".obj"):
+			dump_type == DUMP_TYPE_OBJ
+		else:
+			return
+			
+		# init dump
+		if dump_type == DUMP_TYPE_COLLADA:
+			collada_doc = collada.Collada()
+			root_node = collada.scene.Node("Root", children=[])
+			scene = collada.scene.Scene("Scene", [root_node])
+			collada_doc.scenes.append(scene)
+			collada_doc.scene = scene
+		elif dump_type == DUMP_TYPE_GTB:
+			gtb = {
+				"objects": {},
+			}
+			if self.bone_num > 0:
+				gtb["skeleton"] = {}
+				gtb["skeleton"]["name"] = map(lambda v: "Bone%d" % v, range(self.bone_num))
+				gtb["skeleton"]["parent"] = map(lambda v: v == 255 and -1 or v,
+												self.bone_parent)
+				mat_list = []
+				for mat in self.bone_mat:
+					mat_list.extend(mat.getA1())
+				gtb["skeleton"]["matrix"] = mat_list
+				gtb["bone_id"] = self.bone_id
+				# To support root bone animation, we have to add a virtual 'root' bone
+				if IS_SUPPORT_ROOT_BONE_ANIMATION:
+					gtb["skeleton"]["name"].append("Bone%d" % self.bone_num)
+					for i, parent in enumerate(gtb["skeleton"]["parent"]):
+						if parent == -1:
+							gtb["skeleton"]["parent"][i] = self.bone_num
+					gtb["skeleton"]["parent"].append(-1)
+					mat_list.extend(numpy.identity(4).flatten())
+					gtb["bone_id"].append(255)
+
+		for dp_index in xrange(self.dp_num):
+			dp_info = self.dp_info_list[dp_index]
+			vertices = parse_primitives(self, dp_info)
+			indices = self.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
+			util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
+			indices = map(lambda v: v - dp_info.index_min, indices)
+			assert dp_info.bounding_box_id in self.id_2_bounding_box
+			if dump_type == DUMP_TYPE_OBJ:
+				obj_str = dump_obj(vertices, indices)
+				fout = open(out_path.replace(".obj", "_%d.obj" % dp_index), "w")
+				fout.write(obj_str)
+				fout.close()
+			elif dump_type == DUMP_TYPE_COLLADA:
+				dump_collada(vertices, indices, collada_doc)
+			elif dump_type == DUMP_TYPE_GTB:
+				dump_gtb(vertices, indices, gtb)
+		
+		# finish up dump
+		if dump_type == DUMP_TYPE_COLLADA:
+			fp = open(out_path, "w")
+			collada_doc.write(fp)
+			fp.close()
+		elif dump_type == DUMP_TYPE_GTB:
+			data = json.dumps(gtb, indent=2, sort_keys=True, ensure_ascii=True)
+			if COMPRESS:
+				fp = open(out_path, "wb")
+				fp.write("GTB\x00" + zlib.compress(data))
+			else:
+				fp = open(out_path, "w")
+				fp.write(data)
+			fp.close()
+	
 	
 def parse(path):
 	load_input_layouts("windbg/input_layouts.json", "windbg/input_layouts2.json")
@@ -452,6 +463,8 @@ def parse(path):
 	model.read(getter)
 		
 	f.close()
+	
+	model.dump(path.replace(".mod", ".gtb"))
 	
 	print_bounding_box_check(model)
 	

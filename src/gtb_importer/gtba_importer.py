@@ -6,6 +6,7 @@ import bpy
 import six
 import mathutils
 import json
+import zlib
 	
 def import_gtba(filepath, armature, rotation_resample):
 	gtb = load_raw(filepath)
@@ -36,10 +37,8 @@ def load_raw(filepath):
 	return gtb
 		
 def import_action(motion, armature, motion_name, rotation_resample=False):
-	action = bpy.data.actions.get(motion_name)
-	if not action:
-		action = bpy.data.actions.new(name=motion_name)
-		action.use_fake_user = True
+	action = bpy.data.actions.new(name=motion_name)
+	action.use_fake_user = True
 	if armature.animation_data is None:
 		armature.animation_data_create()
 	armature.animation_data.action = action
