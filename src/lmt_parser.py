@@ -126,46 +126,46 @@ class track(object):
 			range_scales = range_bases = None
 		
 		# keyframe data are stored in a fairly compact format
+		def print_keyframe(i, f, v0, v1, v2, v3):
+			print "\tframe=%d, eval=(%f, %f, %f, %f)" % (f, v0, v1, v2, v3)
+		print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
+			keyframe_offset, keyframes_size, key_type
+		)
 		if keyframe_offset != 0:
-			def print_keyframe(i, f, v0, v1, v2, v3):
-				print "\tframe=%d, eval=(%f, %f, %f, %f)" % (f, v0, v1, v2, v3)
-			print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
-				keyframe_offset, keyframes_size, key_type
-			)
 			lmt.seek(keyframe_offset)
 			keyframes = lmt.block(keyframes_size)
-			if key_type == POS_XYZ_FLOAT_T32:
-				self.keys = self.parse_keyframes_POS_XYZ_FLOAT_T32(keyframes, range_scales, range_bases)
-			elif key_type == POS_XYZT16:
-				self.keys = self.parse_keyframes_POS_XYZT16(keyframes, range_scales, range_bases)
-			elif key_type == POS_XYZT8:
-				self.keys = self.parse_keyframes_POS_XYZT8(keyframes, range_scales, range_bases)
-			elif key_type == ROT_XYZW14_T8:
-				self.keys = self.parse_keyframes_ROT_XYZW14_T8(keyframes, range_scales, range_bases)
-			elif key_type == ROT_XYZW7_T4:
-				self.keys = self.parse_keyframes_ROT_XYZW7_T4(keyframes, range_scales, range_bases)
-			elif key_type == ROT_XW14_T4:
-				self.keys = self.parse_keyframes_ROT_XW14_T4(keyframes, range_scales, range_bases)
-			elif key_type == ROT_YW14_T4:
-				self.keys = self.parse_keyframes_ROT_YW14_T4(keyframes, range_scales, range_bases)
-			elif key_type == ROT_ZW14_T4:
-				self.keys = self.parse_keyframes_ROT_ZW14_T4(keyframes, range_scales, range_bases)
-			elif key_type == ROT_XYZW11_T4:
-				self.keys = self.parse_keyframes_ROT_XYZW11_T4(keyframes, range_scales, range_bases)
-			elif key_type == ROT_XYZW9_T4:
-				self.keys = self.parse_keyframes_ROT_XYZW9_T4(keyframes, range_scales, range_bases)
-			else:
-				assert False, "unsupported keyframe packing type! %d" % key_type
-			f = 0
-			for i, (t, x, y, z, w) in enumerate(self.keys):
-				self.keys[i] = (f, x, y, z, w)
-				if self.bone_id == 255:
-					print_keyframe(i, f, x, y, z, w)
-				f += t
 		else:
-			key = list(self.default_value)
-			key.insert(0, 0)
-			self.keys.append(key)
+			keyframes = None
+		if key_type == POS_XYZ_FLOAT_T32:
+			self.keys = self.parse_keyframes_POS_XYZ_FLOAT_T32(keyframes, range_scales, range_bases)
+		elif key_type == POS_XYZT16:
+			self.keys = self.parse_keyframes_POS_XYZT16(keyframes, range_scales, range_bases)
+		elif key_type == POS_XYZT8:
+			self.keys = self.parse_keyframes_POS_XYZT8(keyframes, range_scales, range_bases)
+		elif key_type == ROT_XYZW14_T8:
+			self.keys = self.parse_keyframes_ROT_XYZW14_T8(keyframes, range_scales, range_bases)
+		elif key_type == ROT_XYZW7_T4:
+			self.keys = self.parse_keyframes_ROT_XYZW7_T4(keyframes, range_scales, range_bases)
+		elif key_type == ROT_XW14_T4:
+			self.keys = self.parse_keyframes_ROT_XW14_T4(keyframes, range_scales, range_bases)
+		elif key_type == ROT_YW14_T4:
+			self.keys = self.parse_keyframes_ROT_YW14_T4(keyframes, range_scales, range_bases)
+		elif key_type == ROT_ZW14_T4:
+			self.keys = self.parse_keyframes_ROT_ZW14_T4(keyframes, range_scales, range_bases)
+		elif key_type == ROT_XYZW11_T4:
+			self.keys = self.parse_keyframes_ROT_XYZW11_T4(keyframes, range_scales, range_bases)
+		elif key_type == ROT_XYZW9_T4:
+			self.keys = self.parse_keyframes_ROT_XYZW9_T4(keyframes, range_scales, range_bases)
+		elif key_type in (1, 2):
+			self.keys = [(0, 0.0, 0.0, 0.0, 1.0)]
+		else:
+			assert False, "unsupported keyframe packing type! %d" % key_type
+		f = 0
+		for i, (t, x, y, z, w) in enumerate(self.keys):
+			self.keys[i] = (f, x, y, z, w)
+			if True:
+				print_keyframe(i, f, x, y, z, w)
+			f += t
 				
 		assert float_4 == 1.0
 		assert type_2 == 0
