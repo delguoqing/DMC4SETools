@@ -15,3 +15,9 @@ src/lmt_log.txt
 src/mod_log.txt
 *.gtba
 src/unknown_extension.txt
+src/tmp/break_on_loading_gui__save__.txt
+src/tmp/create_file_log.txt
+src/tmp/create_file_log2.txt
+src/tmp/create_file_log3.txt
+src/tmp/print_pl000_model_ptr.txt
+src/windbg/dbg_util.py

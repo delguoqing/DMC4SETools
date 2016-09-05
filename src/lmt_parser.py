@@ -37,15 +37,18 @@ class LMT(object):
 		assert reserved == 0x43
 		# motion count
 		motion_num = getter.get("H")
+		print "motion_num", motion_num
 		# motion list
 		self.motion_list = motion_list = []
 		motion_offset_list = getter.get("%dI" % motion_num, force_tuple=True)
-		for motion_offset in motion_offset_list:
+		for i, motion_offset in enumerate(motion_offset_list):
 			if motion_offset == 0:
+				motion_list.append(None)
+				print "motion %d offset = NULL" % i
 				continue
 			getter.seek(motion_offset)
 			print "======================"
-			print "motion offset = 0x%x" % motion_offset
+			print "motion %d offset = 0x%x" % (i, motion_offset)
 			_motion = motion()
 			_motion.read(getter.block(0x3c), getter)
 			motion_list.append(_motion)
@@ -61,10 +64,12 @@ class motion(object):
 		
 		track_off = getter.get("I")
 		track_num = getter.get("I")
-		getter.skip(40)
+		frame_max = getter.get("I")
+		loop_frame = getter.get("i")	# -1: NoLoop, N: (N, frameMax)
+		getter.skip(0x14)
 		field_30 = getter.get("I")
 		field_33 = (field_30 >> 24) & 0xFF
-		offset_34 = getter.get("I")
+		offset_34 = getter.get("I")		# loc_B81D14
 		offset_38 = getter.get("I")
 		
 		self.track_list = track_list = []
@@ -79,6 +84,7 @@ class motion(object):
 		else:
 			print "[WARNING] not skeletal animation!"
 		
+		# mSequence
 		if offset_34 != 0:
 			print "offset_34 = 0x%x, flag=%d" % (offset_34, (field_33 & 2 == 0))
 			if (field_33 & 2) == 0:
@@ -86,11 +92,15 @@ class motion(object):
 				_struc_8 = struc_8()
 				_struc_8.read(getter.block(struc_8.SIZE), getter)
 		
+		# field_30 >> 16 <=> field_32
+		# compared with keyFrameNum?
+		# mKeyFrameWork
 		if (field_30 >> 16) & 0x1F:
 			# offset_38 is valid
 			print "offset_38 = 0x%x" % offset_38
 			if field_30 & 0x4000000:
 				n = (field_30 >> 16) & 0x1F
+				print "field_32 & 0x1F =", n
 				
 # bone keyframe
 class track(object):
@@ -426,19 +436,25 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 	}
 	motion_count = len(lmt.motion_list)
 	default_pose = {}
-	if motion_count > 0:
-		for track in lmt.motion_list[0].track_list:
+	for motion_i in xrange(motion_count):
+		motion = lmt.motion_list[motion_i]
+		if motion is None:
+			continue
+		for track in motion.track_list:
 			if track.trans_type in MODEL_TRANS:
 				continue
 			bone_trans = default_pose.setdefault(track.bone_id, [None, None, None])
 			i = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
 			bone_trans[i] = track.default_value
 		gtba["pose"]["default"] = default_pose
+		break
 	# make sure the motions will be sorted as expected when imported
 	digit_count = len(str(motion_count))
 	motion_name_fmt = "motion_%%0%dd" % digit_count
 	
 	for i, motion in enumerate(lmt.motion_list):
+		if motion is None:
+			continue
 		motion_name = motion_name_fmt % i
 		motion_data = gtba["animations"][motion_name] = {}
 		for track in motion.track_list:

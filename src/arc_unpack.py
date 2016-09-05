@@ -77,7 +77,7 @@ class_name_to_extension = {
 	"rSoundSourceOggVorbis": "sngw",
 }
 
-def unpack(fpath, out_root="."):
+def unpack(fpath, out_root=".", dry_run=False):
 	f = open(fpath, "rb")
 	getter = util.get_getter(f, ENDIAN)
 	get = getter.get
@@ -129,6 +129,8 @@ def unpack(fpath, out_root="."):
 				need_write = False
 				break
 			final_outpath += ".alias"
+		if dry_run:
+			need_write = False
 			
 		if need_write:
 			try:
@@ -141,4 +143,4 @@ def unpack(fpath, out_root="."):
 	f.close()
 
 if __name__ == '__main__':
-	unpack(sys.argv[1])
+	unpack(sys.argv[1], dry_run=True)
