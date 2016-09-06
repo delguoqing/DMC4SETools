@@ -44,11 +44,11 @@ class LMT(object):
 		for i, motion_offset in enumerate(motion_offset_list):
 			if motion_offset == 0:
 				motion_list.append(None)
-				print "motion %d offset = NULL" % i
+				print "motion 0x%x offset = NULL" % i
 				continue
 			getter.seek(motion_offset)
 			print "======================"
-			print "motion %d offset = 0x%x" % (i, motion_offset)
+			print "motion 0x%x offset = 0x%x" % (i, motion_offset)
 			_motion = motion()
 			_motion.read(getter.block(0x3c), getter)
 			motion_list.append(_motion)
@@ -66,6 +66,7 @@ class motion(object):
 		track_num = getter.get("I")
 		frame_max = getter.get("I")
 		loop_frame = getter.get("i")	# -1: NoLoop, N: (N, frameMax)
+		print "loop_frame: %d" % loop_frame
 		getter.skip(0x14)
 		field_30 = getter.get("I")
 		field_33 = (field_30 >> 24) & 0xFF
@@ -173,7 +174,7 @@ class track(object):
 		f = 0
 		for i, (t, x, y, z, w) in enumerate(self.keys):
 			self.keys[i] = (f, x, y, z, w)
-			if True:
+			if bone_id == 9:
 				print_keyframe(i, f, x, y, z, w)
 			f += t
 				
