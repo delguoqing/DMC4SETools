@@ -7,6 +7,9 @@ import six
 import mathutils
 import json
 import zlib
+import math
+
+from mathutils import Matrix, Vector
 
 BONE_LENGTH = 10.0
 
@@ -157,6 +160,12 @@ def import_armature(gtb):
 	
 	bpy.ops.object.mode_set(mode='EDIT')
 
+	m = mathutils.Matrix()
+	m[0].xyzw = 1, 0, 0, 0
+	m[1].xyzw = 0, 0,-1, 0
+	m[2].xyzw = 0, 1, 0, 0
+	m[3].xyzw = 0, 0, 0, 1
+	
 	for bone_idx in range(bone_num):
 		bone_name = bone_name_list[bone_idx]
 		bone = armt.edit_bones.new(bone_name)
@@ -168,13 +177,11 @@ def import_armature(gtb):
 		# the tail position once the information get dropped when exporting to a dedicated
 		# format.
 		tail = mathutils.Vector([0.0, 1.0 * BONE_LENGTH, 0.0, 1.0])
-		head_world = world_mat * head
-		tail_world = world_mat * tail
-		bone.head = (head_world.x, -head_world.z, head_world.y)
-		bone.tail = (tail_world.x, -tail_world.z, tail_world.y)
-		_, rot, _ = world_mat.decompose()
-		axis, angle = rot.to_axis_angle()
-		bone.roll = -angle
+		
+		bone.head = (m * world_mat * head).xyz.to_tuple()
+		bone.tail = (m * world_mat * tail).xyz.to_tuple()
+		axis, roll = mat3_to_vec_roll((m * world_mat).to_3x3())
+		bone.roll = roll
 		
 	for bone_idx, bone_name in enumerate(bone_name_list):
 		bone = armt.edit_bones[bone_name]
@@ -211,3 +218,26 @@ def calc_local_to_world_matrix(i, local_mat, parent, result):
 		return
 	calc_local_to_world_matrix(parent[i], local_mat, parent, result)
 	result[i] = result[parent[i]] * local_mat[i]
+
+def vec_roll_to_mat3(vec, roll):
+    target = Vector((0,1,0))
+    nor = vec.normalized()
+    axis = target.cross(nor)
+    if axis.dot(axis) > 0.000001:
+        axis.normalize()
+        theta = target.angle(nor)
+        bMatrix = Matrix.Rotation(theta, 3, axis)
+    else:
+        updown = 1 if target.dot(nor) > 0 else -1
+        bMatrix = Matrix.Scale(updown, 3)
+    rMatrix = Matrix.Rotation(roll, 3, nor)
+    mat = rMatrix * bMatrix
+    return mat
+
+def mat3_to_vec_roll(mat):
+    vec = mat.col[1]
+    vecmat = vec_roll_to_mat3(mat.col[1], 0)
+    vecmatinv = vecmat.inverted()
+    rollmat = vecmatinv * mat
+    roll = math.atan2(rollmat[0][2], rollmat[2][2])
+    return vec, roll
