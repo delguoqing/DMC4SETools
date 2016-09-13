@@ -26,6 +26,37 @@ def run(class_hash):
 			print "Method: Get Extendsion At: %x" % methods[0]
 			break
 		offset = metainfo[5]
-				
+	
+def iter_metainfo():
+	link_list_head = parse( DBG("dd 12c9c90 L100") )
+	for offset in link_list_head:
+		while offset != 0:
+			metainfo = parse( DBG("dd %x" % offset) )
+			yield offset, metainfo
+			offset = metainfo[5]
+			
+def rfind_int(value_offset, value):
+	for offset, metainfo in iter_metainfo():
+		cmp_value = metainfo[value_offset / 4]
+		if cmp_value == value:
+			print "Offset = 0x%x" % offset
+			return
+	print "not found!"
+
+def rfind_string(value_offset, value):
+	for offset, metainfo in iter_metainfo():
+		cmp_value = metainfo[value_offset / 4]
+		string = eval(DBG("da %x" % cmp_value).split()[1])
+		if string == value:
+			print "Offset = 0x%x" % offset
+			return
+	print "not found!"
+			
 if __name__ == '__main__':
-	run(sys.argv[1])
+	find_method = sys.argv[1]
+	if find_method == "hash":
+		run(sys.argv[2])
+	elif find_method == "int":
+		rfind_int(int(sys.argv[2], 16), int(sys.argv[3], 16))
+	elif find_method == "string":
+		rfind_string(int(sys.argv[2], 16), sys.argv[3])
