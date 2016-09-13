@@ -7,26 +7,13 @@ import six
 import mathutils
 import json
 import zlib
-	
+
 def import_gtba(filepath, armature, rotation_resample):
 	gtb = load_raw(filepath)
 
 	bpy.ops.object.mode_set(mode='EDIT')
 	
-	m = mathutils.Matrix()
-	m[0].xyzw = 1, 0, 0, 0
-	m[1].xyzw = 0, 0, 1, 0
-	m[2].xyzw = 0,-1, 0, 0
-	m[3].xyzw = 0, 0, 0, 1
-	
-	bind_pose = {}
-	for bone in armature.data.edit_bones:
-		if bone.parent is None:
-			loc_mat = m * bone.matrix
-		else:
-			loc_mat = (m * bone.parent.matrix).inverted() * (m * bone.matrix)
-		loc, rot, scale = loc_mat.decompose()
-		bind_pose[bone.name] = (loc, rot, scale)
+	bind_pose = calc_bind_pose_transforma(armature)
 	
 	bpy.ops.object.mode_set()
 	
@@ -71,8 +58,9 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 		pose_bone = pose_bones[bone_name]
 		# location keyframes
 		if loc is None:
-			pose_bone.location = mathutils.Vector([0, 0, 0])
-			pose_bone.keyframe_insert("location", index=-1, frame=1)
+			pass
+			# pose_bone.location = mathutils.Vector([0, 0, 0])
+			# pose_bone.keyframe_insert("location", index=-1, frame=1)
 		else:
 			for loc_k in loc:
 				f = loc_k[0] + 1
@@ -81,8 +69,9 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				pose_bone.keyframe_insert("location", index=-1, frame=f)
 		# rotation keyframes
 		if rot is None:
-			pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
-			pose_bone.keyframe_insert("rotation_quaternion", index=-1, frame=1)
+			pass
+			# pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
+			# pose_bone.keyframe_insert("rotation_quaternion", index=-1, frame=1)
 		else:
 			prev_f = 1
 			for rot_k in rot:
@@ -91,7 +80,7 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				q = mathutils.Quaternion(
 					[rot_k[4], rot_k[1], rot_k[2], rot_k[3]]
 				)
-				q *= bind_pose[bone_name][1].inverted()
+				q = bind_pose[bone_name][1].inverted() * q
 				if f - prev_f > 1 and rotation_resample:
 					prev_q = mathutils.Quaternion(pose_bone.rotation_quaternion)
 					step = 1.0 / (f - prev_f)
@@ -107,8 +96,9 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				prev_f = f
 		# scale keyframes
 		if scale is None:
-			pose_bone.scale = mathutils.Vector([1, 1, 1])
-			pose_bone.keyframe_insert("scale", index=-1, frame=1)
+			pass
+			# pose_bone.scale = mathutils.Vector([1, 1, 1])
+			# pose_bone.keyframe_insert("scale", index=-1, frame=1)
 		else:
 			for scale_k in scale:
 				f = scale_k[0] + 1
@@ -141,7 +131,7 @@ def apply_pose(armature, pose, bind_pose):
 				[rot[3], rot[0], rot[1], rot[2]]
 			)
 			# to relative rotation
-			pose_bone.rotation_quaternion *= bind_pose[bone_name][1].inverted()
+			pose_bone.rotation_quaternion = bind_pose[bone_name][1].inverted() * pose_bone.rotation_quaternion
 		else:
 			pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
 		
@@ -153,3 +143,20 @@ def apply_pose(armature, pose, bind_pose):
 			pose_bone.scale.z /= bind_pose[bone_name][2].z
 		else:
 			pose_bone.scale = mathutils.Vector([1, 1, 1])
+
+def calc_bind_pose_transforma(armature):
+	m = mathutils.Matrix()
+	m[0].xyzw = 1, 0, 0, 0
+	m[1].xyzw = 0, 0, 1, 0
+	m[2].xyzw = 0,-1, 0, 0
+	m[3].xyzw = 0, 0, 0, 1
+	
+	bind_pose = {}
+	for bone in armature.data.edit_bones:
+		if bone.parent is None:
+			loc_mat = m * bone.matrix
+		else:
+			loc_mat = (m * bone.parent.matrix).inverted() * (m * bone.matrix)
+		loc, rot, scale = loc_mat.decompose()
+		bind_pose[bone.name] = (loc, rot, scale)
+	return bind_pose
