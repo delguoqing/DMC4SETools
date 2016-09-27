@@ -33,6 +33,7 @@ class ImportGTB(bpy.types.Operator, ImportHelper):
 
 	filename_ext = ".gtb"
 	filter_glob = StringProperty(default="*.gtb", options={'HIDDEN'})
+	armat_name = StringProperty(default="armat")
 
 	bone_length = FloatProperty(
 		name="Bone Length",
@@ -40,13 +41,15 @@ class ImportGTB(bpy.types.Operator, ImportHelper):
 		min=0.0, max=1000.0,
 		soft_min=0.0, soft_max=1000.0,
 		default=10.0)
-
+	
 	def execute(self, context):
 		path = os.path.join(self.directory, self.files[0].name)
 
 		from . import gtb_importer
 		if self.bone_length > 0:
 			gtb_importer.BONE_LENGTH = self.bone_length
+		gtb_importer.ARMAT_NAME = self.armat_name
+		
 		gtb_importer.import_gtb(path)
 
 		return {'FINISHED'}

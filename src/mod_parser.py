@@ -501,11 +501,6 @@ def parse_primitives(mod, dp_info):
 	# Parse
 	vertices = []
 	
-	# remap position to the correct value range
-	n1_block_index = dp_info.n1_block_start_index
-	bb_min = mod.n1_block_list[n1_block_index][1]
-	bb_max = mod.n1_block_list[n1_block_index][2]
-	
 	# parse referrenced vertex buffer
 	vertex_format_size = calc_vertex_format_size(IA_d3d10)	
 	getter = util.get_getter(mod.vb, "<")

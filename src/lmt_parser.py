@@ -477,6 +477,8 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 		f.write(data)
 	f.close()
 	
+	return lmt
+	
 def test_all(test_count=-1):
 	root = os.path.join(os.environ["DMC4SE_DATA_DIR"], "motion")
 	for top, dirs, files in os.walk(root):
@@ -495,6 +497,6 @@ def test_all(test_count=-1):
 					
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
-		parse(sys.argv[1])
+		lmt = parse(sys.argv[1])
 	else:
 		test_all()
