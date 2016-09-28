@@ -58,9 +58,8 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 		pose_bone = pose_bones[bone_name]
 		# location keyframes
 		if loc is None:
-			pass
-			# pose_bone.location = mathutils.Vector([0, 0, 0])
-			# pose_bone.keyframe_insert("location", index=-1, frame=1)
+			pose_bone.location = mathutils.Vector([0, 0, 0])
+			pose_bone.keyframe_insert("location", index=-1, frame=1)
 		else:
 			for loc_k in loc:
 				f = loc_k[0] + 1
@@ -69,9 +68,8 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				pose_bone.keyframe_insert("location", index=-1, frame=f)
 		# rotation keyframes
 		if rot is None:
-			pass
-			# pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
-			# pose_bone.keyframe_insert("rotation_quaternion", index=-1, frame=1)
+			pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
+			pose_bone.keyframe_insert("rotation_quaternion", index=-1, frame=1)
 		else:
 			prev_f = 1
 			for rot_k in rot:
@@ -96,13 +94,14 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				prev_f = f
 		# scale keyframes
 		if scale is None:
-			pass
-			# pose_bone.scale = mathutils.Vector([1, 1, 1])
-			# pose_bone.keyframe_insert("scale", index=-1, frame=1)
+			print ("using default!")
+			pose_bone.scale = mathutils.Vector([1, 1, 1])
+			pose_bone.keyframe_insert("scale", index=-1, frame=1)
 		else:
 			for scale_k in scale:
 				f = scale_k[0] + 1
 				pose_bone.scale = mathutils.Vector(scale_k[1:4])
+				print ("using keyframe", pose_bone.scale)
 				pose_bone.scale.x /= bind_pose[bone_name][2].x
 				pose_bone.scale.y /= bind_pose[bone_name][2].y
 				pose_bone.scale.z /= bind_pose[bone_name][2].z								

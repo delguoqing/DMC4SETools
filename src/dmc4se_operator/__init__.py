@@ -13,6 +13,7 @@ import random
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from bpy.props import (CollectionProperty, StringProperty, BoolProperty, EnumProperty, FloatProperty)
 from .load_model_operator import LoadModelOperator
+from .load_motion_operator import LoadMotionOperator, MOTION_FOLDER_MAP
 		
 def get_model_list():
 	root = os.environ["DMC4SE_DATA_DIR"]
@@ -35,17 +36,15 @@ def get_model_list():
 def get_motion_list(self, context):
 	model = context.scene.model
 	root = os.environ["DMC4SE_DATA_DIR"]
-	motion_folder_map = {
-		"pl000_ex00": "pl000",
-		"pl000_ex01": "pl000",
-	}
-	motion_folder = motion_folder_map.get(model, model)
+	motion_folder = MOTION_FOLDER_MAP.get(model, model)
 	motion_root = os.path.join(root, "motion/%s" % motion_folder)
 	motion_list = []
 	for dirpath, dirnames, filenames in os.walk(motion_root):
 		for fname in filenames:
 			if fname.endswith(".lmt"):
 				name = os.path.splitext(fname)[0]
+				name = os.path.normpath(os.path.join(dirpath, name))
+				name = os.path.relpath(name, start=motion_root)
 				motion_list.append((
 					name, # identifier,
 					name, # name,
@@ -65,13 +64,17 @@ class DMC4SEPanel(bpy.types.Panel):
 	
 	def draw(self, context):
 		layout = self.layout
-		layout.prop(context.scene, "model")
-		layout.prop(context.scene, "motion")
-		layout.operator("dmc4se.load_model")
+		row = layout.row()
+		row.prop(context.scene, "model", text="MOD")
+		row.operator("dmc4se.load_model", text="Load")
+		row = layout.row()
+		row.prop(context.scene, "motion", text="MOT")
+		row.operator("dmc4se.load_motion", text="Load")
 	
 def register():
 	bpy.utils.register_class(DMC4SEPanel)
 	bpy.utils.register_class(LoadModelOperator)
+	bpy.utils.register_class(LoadMotionOperator)
 	bpy.types.Scene.model = bpy.props.EnumProperty(
 		items=get_model_list(),
 		default="pl000",
@@ -85,6 +88,7 @@ def register():
 def unregister():
 	bpy.utils.unregister_class(DMC4SEPanel)
 	bpy.utils.unregister_class(LoadModelOperator)
+	bpy.utils.unregister_class(LoadMotionOperator)
 	del bpy.types.Scene.model
 	del bpy.types.Scene.motion
 

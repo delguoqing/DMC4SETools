@@ -167,10 +167,8 @@ class track(object):
 			self.keys = self.parse_keyframes_ROT_XYZW11_T4(keyframes, range_scales, range_bases)
 		elif key_type == ROT_XYZW9_T4:
 			self.keys = self.parse_keyframes_ROT_XYZW9_T4(keyframes, range_scales, range_bases)
-		elif key_type == 2:
+		elif key_type in (1, 2):
 			self.keys = [(0,) + tuple(self.default_value)]
-		elif key_type in (1, ):
-			self.keys = [(0, 0.0, 0.0, 0.0, 1.0)]
 		else:
 			assert False, "unsupported keyframe packing type! %d" % key_type
 		f = 0

@@ -18,75 +18,79 @@ class LoadModelOperator(bpy.types.Operator):
 			bpy.ops.object.delete(use_global=False)
 		
 		model = context.scene.model
-		motion = context.scene.motion
-
 		load = getattr(self, "load_model_%s" % model, self.load_model_default)
-		load(model)
+		load(context, model)
 		
 		return {"FINISHED"}
 	
-	def load_model_default(self, model):
+	def load_model_default(self, context, model):
 		self._load_mod_file(model, model + ".gtb")
 		
-	def load_model_em000(self, model):
-		model = random.choice(("em000", "em000_01"))
-		self._load_mod_file(model, model + ".gtb")
+	def load_model_em000(self, context, model):
+		self._load_mod_file(model, random.choice(("em000", "em000_01")) + ".gtb")
 
-	def load_model_em001(self, model):
-		model = random.choice(("em001", "em001_02"))
-		self._load_mod_file(model, model + ".gtb")
+	def load_model_em001(self, context, model):
+		self._load_mod_file(model, random.choice(("em001", "em001_02")) + ".gtb")
 		
-	def load_model_em009(self, model):
+	def load_model_em009(self, context, model):
 		self._load_model_parts(model, 6)
 	
-	def load_model_em015(self, model):
+	def load_model_em015(self, context, model):
 		self._load_model_parts(model, 3)
 
-	def load_model_em018(self, model):
+	def load_model_em018(self, context, model):
 		self._load_model_parts(model, 2)
 		
-	def load_model_em021(self, model):
-		self.load_model_default(model)
+	def load_model_em021(self, context, model):
+		self.load_model_default(context, model)
 		for i in range(1, 6):
 			self._load_mod_file(model, model + "_%02d" % i + ".gtb")
 
-	def load_model_em026(self, model):
+	def load_model_em026(self, context, model):
 		self._load_model_parts(model, 2)
 		
-	def load_model_pl000(self, model):
+	def load_model_pl000(self, context, model):
 		self._load_mod_file(model, "pl000.gtb", armat_name="armat_body")
 		self._load_mod_file(model, "pl000_01.gtb", armat_name="armat_head")
 		self._load_mod_file(model, "pl000_02.gtb", armat_name="armat_hair")
 		self._load_mod_file(model, "pl000_03.gtb", armat_name="armat_coat")
 		
-	def load_model_pl000_ex00(self, model):
+		body = context.scene.objects["armat_body"]
+		head = context.scene.objects["armat_head"]
+		hair = context.scene.objects["armat_hair"]
+		coat = context.scene.objects["armat_coat"]
+		self._copy_transform(head, body, zip((0, 1, 2, 3, 4), (2, 3, 4, 5, 32)))
+		self._copy_transform(hair, head, zip((0, 1), (1, 2)))
+		self._copy_transform(coat, body, zip((0, ), (2, )))
+		
+	def load_model_pl000_ex00(self, context, model):
 		self._load_mod_file(model, "pl000.gtb")
 
-	def load_model_pl000_ex01(self, model):
+	def load_model_pl000_ex01(self, context, model):
 		self._load_mod_file(model, "pl000.gtb")
 
-	def load_model_pl006_ex00(self, model):
+	def load_model_pl006_ex00(self, context, model):
 		self._load_mod_file(model, "pl006.gtb")
 
-	def load_model_pl006_ex01(self, model):
+	def load_model_pl006_ex01(self, context, model):
 		self._load_mod_file(model, "pl006.gtb")
 
-	def load_model_pl007_ex01(self, model):
+	def load_model_pl007_ex01(self, context, model):
 		self._load_mod_file(model, "pl007.gtb")
 
-	def load_model_pl008_ex01(self, model):
+	def load_model_pl008_ex01(self, context, model):
 		self._load_mod_file(model, "pl008.gtb")
 
-	def load_model_pl024_ex00(self, model):
+	def load_model_pl024_ex00(self, context, model):
 		self._load_mod_file(model, "pl024.gtb")
 
-	def load_model_pl024_ex01(self, model):
+	def load_model_pl024_ex01(self, context, model):
 		self._load_mod_file(model, "pl024.gtb")
 		
-	def load_model_pl030_ex00(self, model):
+	def load_model_pl030_ex00(self, context, model):
 		self._load_mod_file(model, "pl030.gtb")
 
-	def load_model_pl030_ex01(self, model):
+	def load_model_pl030_ex01(self, context, model):
 		self._load_mod_file(model, "pl030.gtb")
 
 	def _load_model_parts(self, model, n):
@@ -102,4 +106,17 @@ class LoadModelOperator(bpy.types.Operator):
 		)
 	
 	def _copy_transform(self, armt_dst, armt_src, bone_pairs):
-		pass
+		bpy.ops.object.mode_set(mode='OBJECT')
+		bpy.context.scene.objects.active = armt_dst
+		armt_dst.select = True
+		bpy.ops.object.mode_set(mode='POSE')
+		for i, j in bone_pairs:
+			b = armt_dst.pose.bones["Bone%d" % i]
+			armt_dst.data.bones.active = b.bone	# wtf, poorly documented
+			bpy.ops.pose.constraint_add(type='COPY_TRANSFORMS')
+			cns = b.constraints['Copy Transforms']
+			cns.target = armt_src
+			cns.subtarget = "Bone%d" % j
+		bpy.ops.object.mode_set(mode='OBJECT')
+		armt_dst.select = False
+	
