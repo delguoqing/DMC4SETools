@@ -14,7 +14,9 @@ from bpy_extras.io_utils import ImportHelper, ExportHelper
 from bpy.props import (CollectionProperty, StringProperty, BoolProperty, EnumProperty, FloatProperty)
 from .load_model_operator import LoadModelOperator
 from .load_motion_operator import LoadMotionOperator, MOTION_FOLDER_MAP
-		
+from .play_motion_operator import PlayMotionOperator
+from . import glb
+
 def get_model_list():
 	root = os.environ["DMC4SE_DATA_DIR"]
 	model_root = os.path.join(root, "model/game")
@@ -70,27 +72,49 @@ class DMC4SEPanel(bpy.types.Panel):
 		row = layout.row()
 		row.prop(context.scene, "motion", text="MOT")
 		row.operator("dmc4se.load_motion", text="Load")
+		
+		layout.prop(context.scene, "motion_index", text="Motion Id")
+		row = layout.row()
+		
+		op = row.operator("dmc4se.play_motion", text="Prev")
+		op.op = "PREV"
+		op.index = context.scene.motion_index
+		
+		if context.screen.is_animation_playing:
+			op = row.operator("dmc4se.play_motion", text="Pause")
+			op.op = "PAUSE"
+		else:
+			op = row.operator("dmc4se.play_motion", text="Play")
+			op.op = "PLAY"
+		op.index = context.scene.motion_index
+		
+		op = row.operator("dmc4se.play_motion", text="Next")
+		op.index = context.scene.motion_index
+		op.op = "NEXT"
 	
 def register():
 	bpy.utils.register_class(DMC4SEPanel)
 	bpy.utils.register_class(LoadModelOperator)
 	bpy.utils.register_class(LoadMotionOperator)
+	bpy.utils.register_class(PlayMotionOperator)
 	bpy.types.Scene.model = bpy.props.EnumProperty(
 		items=get_model_list(),
-		default="pl000",
 		name="Model",
 	)
 	bpy.types.Scene.motion = bpy.props.EnumProperty(
 		items=get_motion_list,
-		name="Motion"
+		name="Motion",
 	)
+	bpy.types.Scene.motion_index = bpy.props.IntProperty()
 	
 def unregister():
 	bpy.utils.unregister_class(DMC4SEPanel)
 	bpy.utils.unregister_class(LoadModelOperator)
 	bpy.utils.unregister_class(LoadMotionOperator)
+	bpy.utils.unregister_class(PlayMotionOperator)
 	del bpy.types.Scene.model
 	del bpy.types.Scene.motion
+	del bpy.types.Scene.motion_index
 
 if __name__ == '__main__':
 	register()

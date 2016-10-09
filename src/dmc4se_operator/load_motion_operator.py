@@ -3,6 +3,7 @@ import bpy
 import random
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from bpy.props import (CollectionProperty, StringProperty, BoolProperty, EnumProperty, FloatProperty)
+from . import glb
 
 MOTION_FOLDER_MAP = {
 	"pl000_ex00": "pl000",
@@ -18,10 +19,13 @@ class LoadMotionOperator(bpy.types.Operator):
 		for action in bpy.data.actions:
 			action.user_clear()
 			bpy.data.actions.remove(action)
+		glb.all_motions = {}
+		glb.motion_indices = []
 		motion = context.scene.motion
 		model = context.scene.model
 		load = getattr(self, "load_motion_%s" % model, self.load_motion_default)
-		load(context, model, motion)		
+		load(context, model, motion)
+		self.update_motion_list()
 		return {"FINISHED"}
 	
 	def load_motion_default(self, context, model, motion):
@@ -38,6 +42,7 @@ class LoadMotionOperator(bpy.types.Operator):
 		bpy.context.scene.objects.active = armat
 		armat.select = True
 		self._load_lmt_file("pl000", motion)
+		armat.select = False
 
 		armat = context.scene.objects['armat_coat']
 		bpy.ops.object.mode_set(mode='OBJECT')
@@ -53,4 +58,15 @@ class LoadMotionOperator(bpy.types.Operator):
 		directory = os.path.normpath(directory)
 		bpy.ops.import_animation.gtb(
 			'EXEC_DEFAULT', directory=directory, files=[{"name": motion + ".gtba"}]
-		)	
+		)
+		
+	def update_motion_list(self):
+		all_motions = {}
+		for name, action in bpy.data.actions.items():
+			name = name.split(".")[0]
+			index = int("".join(filter(str.isdigit, name)))
+			if index not in all_motions:
+				all_motions[index] = []
+			all_motions[index].append(action)
+		glb.all_motions = all_motions
+		glb.motion_indices = sorted(all_motions.keys())

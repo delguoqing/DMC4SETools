@@ -14,7 +14,6 @@ def import_gtba(filepath, armature, rotation_resample):
 	bpy.ops.object.mode_set(mode='EDIT')
 	
 	bind_pose = calc_bind_pose_transforma(armature)
-	
 	bpy.ops.object.mode_set()
 	
 	for motion_name, motion in gtb["animations"].items():
@@ -45,6 +44,7 @@ def load_raw(filepath):
 def import_action(motion, armature, motion_name, bind_pose, rotation_resample=False):
 	action = bpy.data.actions.new(name=motion_name)
 	action.use_fake_user = True
+	action.target_user = armature.name
 	if armature.animation_data is None:
 		armature.animation_data_create()
 	armature.animation_data.action = action
@@ -94,14 +94,12 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				prev_f = f
 		# scale keyframes
 		if scale is None:
-			print ("using default!")
 			pose_bone.scale = mathutils.Vector([1, 1, 1])
 			pose_bone.keyframe_insert("scale", index=-1, frame=1)
 		else:
 			for scale_k in scale:
 				f = scale_k[0] + 1
 				pose_bone.scale = mathutils.Vector(scale_k[1:4])
-				print ("using keyframe", pose_bone.scale)
 				pose_bone.scale.x /= bind_pose[bone_name][2].x
 				pose_bone.scale.y /= bind_pose[bone_name][2].y
 				pose_bone.scale.z /= bind_pose[bone_name][2].z								
