@@ -14,7 +14,6 @@ def import_gtba(filepath, armature, rotation_resample):
 	bpy.ops.object.mode_set(mode='EDIT')
 	
 	bind_pose = calc_bind_pose_transforma(armature)
-	
 	bpy.ops.object.mode_set()
 	
 	for motion_name, motion in gtb["animations"].items():
@@ -45,6 +44,7 @@ def load_raw(filepath):
 def import_action(motion, armature, motion_name, bind_pose, rotation_resample=False):
 	action = bpy.data.actions.new(name=motion_name)
 	action.use_fake_user = True
+	action.target_user = armature.name
 	if armature.animation_data is None:
 		armature.animation_data_create()
 	armature.animation_data.action = action
@@ -58,9 +58,8 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 		pose_bone = pose_bones[bone_name]
 		# location keyframes
 		if loc is None:
-			pass
-			# pose_bone.location = mathutils.Vector([0, 0, 0])
-			# pose_bone.keyframe_insert("location", index=-1, frame=1)
+			pose_bone.location = mathutils.Vector([0, 0, 0])
+			pose_bone.keyframe_insert("location", index=-1, frame=1)
 		else:
 			for loc_k in loc:
 				f = loc_k[0] + 1
@@ -69,9 +68,8 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				pose_bone.keyframe_insert("location", index=-1, frame=f)
 		# rotation keyframes
 		if rot is None:
-			pass
-			# pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
-			# pose_bone.keyframe_insert("rotation_quaternion", index=-1, frame=1)
+			pose_bone.rotation_quaternion = mathutils.Quaternion([1, 0, 0, 0])
+			pose_bone.keyframe_insert("rotation_quaternion", index=-1, frame=1)
 		else:
 			prev_f = 1
 			for rot_k in rot:
@@ -96,9 +94,8 @@ def import_action(motion, armature, motion_name, bind_pose, rotation_resample=Fa
 				prev_f = f
 		# scale keyframes
 		if scale is None:
-			pass
-			# pose_bone.scale = mathutils.Vector([1, 1, 1])
-			# pose_bone.keyframe_insert("scale", index=-1, frame=1)
+			pose_bone.scale = mathutils.Vector([1, 1, 1])
+			pose_bone.keyframe_insert("scale", index=-1, frame=1)
 		else:
 			for scale_k in scale:
 				f = scale_k[0] + 1

@@ -12,6 +12,7 @@ import math
 from mathutils import Matrix, Vector
 
 BONE_LENGTH = 10.0
+ARMAT_NAME = "armat"
 
 def ENSURE_LUT(v):
 	if hasattr(v, "ensure_lookup_table"):
@@ -145,18 +146,16 @@ def import_armature(gtb):
 	for i in range(bone_num):
 		calc_local_to_world_matrix(i, bone_mat_list, parent_list, world_mat_list)
 	
-	armature_name = "armat"
-	
 	bpy.ops.object.add(type='ARMATURE', enter_editmode=True)
 	obj = bpy.context.object
 	obj.show_x_ray = True
-	obj.name = armature_name
+	obj.name = ARMAT_NAME
 	obj.select = True
 	obj["bone_mapping"] = bone_mapping
 	bpy.context.scene.objects.active = obj
 	
 	armt = obj.data
-	armt.name = armature_name
+	armt.name = ARMAT_NAME
 	
 	bpy.ops.object.mode_set(mode='EDIT')
 
