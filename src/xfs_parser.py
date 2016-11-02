@@ -71,7 +71,6 @@ def parse_object(xml_defs, i, blk, depth=0):
 				parse_object(xml_defs, 1, blk, depth + 1)
 				continue
 			else:
-				log("offset = 0x%x" % (blk.offset + getter.offset - blk.size))
 				assert False, "unknown type! %d" % base_type
 			log(("\t%d: " % j), v)
 	
