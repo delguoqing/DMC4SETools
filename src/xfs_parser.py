@@ -38,9 +38,21 @@ def parse(path):
 	sz = getter.get("I")
 	blk = getter.block(sz - 4)
 
-	for i, (name, node_type) in enumerate(xml_defs[0]):
-		print "retrieving value for %s 0x%x" % (name, node_type)
-		nn = blk.get("I")
+	parse_object(xml_defs, 0, blk)
+		
+# should parse recursively
+def parse_object(xml_defs, i, blk, depth=0):
+	xml_def = xml_defs[i]
+	if i == 0:
+		next_xml_def = 1
+	else:
+		next_xml_def = None
+	indent = "\t" * depth
+	def log(*args):
+		print indent + " ".join(map(str, args))
+	for i, (name, node_type) in enumerate(xml_def):
+		log("offset = 0x%x, retrieving value for %s 0x%x" % (blk.offset, name, node_type))
+		nn = blk.get("I") & 0x7FFF
 		base_type = node_type & 0xFF
 		# assert nn == 1, "nn=%d, offset=0x%x" % (nn, blk.offset)
 		for j in xrange(nn):
@@ -55,13 +67,14 @@ def parse(path):
 			elif base_type == 0x9:
 				v = blk.get("H")
 			elif base_type == 0x1:
-				# class_ref
-				raise Exception("not supported yet!")
+				log("object%d" % j)
+				parse_object(xml_defs, 1, blk, depth + 1)
+				continue
 			else:
-				print "offset = 0x%x" % (blk.offset + getter.offset - blk.size)
+				log("offset = 0x%x" % (blk.offset + getter.offset - blk.size))
 				assert False, "unknown type! %d" % base_type
-			print ("\t%d: " % j), v
-		
+			log(("\t%d: " % j), v)
+	
 def parse_subdata(subdatablock, subdata):
 	cls_hash = subdata.get("I")
 	hash_2_classname = get_hash_2_classname()
