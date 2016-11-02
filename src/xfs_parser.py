@@ -2,7 +2,7 @@
 import sys
 import util
 import json
-
+	
 def parse(path):
 	with open(path, "rb") as f:
 		data = f.read()
@@ -15,27 +15,69 @@ def parse(path):
 	unk1 = header.get("H")
 	unk_cnt = header.get("I")
 	assert unk0 & 0x7FFF == 0xF
-	off_cnt = header.get("I", offset=0x10)
-	subdata_sz = header.get("I")
+
+	subdata_cnt = header.get("I", offset=0x10)
+	subdatablock_sz = header.get("I", offset=0x14)
 	
-	subdata = getter.block(subdata_sz)
-	
-	off_lst = subdata.get("%dI" % off_cnt, force_tuple=True)
-	print "subdata_item offset = ", map(hex, off_lst)
+	subdatablock = getter.block(subdatablock_sz)
+	off_lst = subdatablock.get("%dI" % subdata_cnt, force_tuple=True)
+	xml_defs = []
 	for i, off in enumerate(off_lst):
-		if i < len(off_lst) - 1:
+		if i + 1 < len(off_lst):
 			sz = off_lst[i + 1] - off
 		else:
-			sz = subdata.size
-		subdata.seek(off)
-		subdata_item = subdata.block(sz)
-		parse_subdata_item(subdata, subdata_item)
+			sz = subdatablock_sz - off
+		subdatablock.seek(off)
+		subdata = subdatablock.block(sz)
+		def_ = parse_subdata(subdatablock, subdata)
+		xml_defs.append(def_)
 		
-	v = getter.get("I")
-	assert ((v >> 1) & 0x7FFF) != 0x7FFF
-	
-	sz = getter.get("I")	# remain size?
-	
+	n = getter.get("I")
+	assert ((n >> 1) & 0x7FFF) != 0x7FFF
+	assert n == 1
+	sz = getter.get("I")
+	blk = getter.block(sz - 4)
+
+	for i, (name, node_type) in enumerate(xml_defs[0]):
+		print "retrieving value for %s 0x%x" % (name, node_type)
+		nn = blk.get("I")
+		base_type = node_type & 0xFF
+		# assert nn == 1, "nn=%d, offset=0x%x" % (nn, blk.offset)
+		for j in xrange(nn):
+			if base_type == 6:
+				v = blk.get("I")
+			elif base_type == 0xc:
+				v = blk.get("f")
+			elif base_type == 0x14:
+				v = blk.get("4f")
+			elif base_type == 0x3:
+				v = blk.get("B")
+			elif base_type == 0x9:
+				v = blk.get("H")
+			elif base_type == 0x1:
+				# class_ref
+				raise Exception("not supported yet!")
+			else:
+				print "offset = 0x%x" % (blk.offset + getter.offset - blk.size)
+				assert False, "unknown type! %d" % base_type
+			print ("\t%d: " % j), v
+		
+def parse_subdata(subdatablock, subdata):
+	cls_hash = subdata.get("I")
+	hash_2_classname = get_hash_2_classname()
+	cls_name = hash_2_classname[cls_hash]
+	print "Parsing cls: 0x%x" % cls_hash
+	node_count = subdata.get("I") & 0x7FFF
+	xml_def = []
+	for i in xrange(node_count):
+		node_name_off = subdata.get("I")
+		node_name = subdatablock.data[node_name_off: subdatablock.data.find("\x00", node_name_off)]
+		node_type = subdata.get("I")
+		mt_type = (node_type & 0xFF) | (((node_type & 0xFF00) << 8) & 0xFFFF0000)
+		print "\t", node_name, hex(mt_type), hex(node_type)
+		subdata.skip(0x10)
+		xml_def.append((node_name, node_type))
+	return xml_def
 		
 hash_2_classname = None
 def get_hash_2_classname():
@@ -51,24 +93,6 @@ def get_hash_2_classname():
 def parse_mtobj_type(t):
 	print "is_array", (t >> 17) & 1
 	print "is_what", (t >> 15) & 1
-	
-def parse_subdata_item(subdata, item):
-	item.seek(0)
-	cls_hash = item.get("I")
-	hash_2_classname = get_hash_2_classname()
-	cls_name = hash_2_classname[cls_hash]
-	print "Parsing", cls_name
-	key_cnt = item.get("I") & 0x7FFF
-	for i in xrange(key_cnt):
-		key_off = item.get("I")
-		key = subdata.data[key_off: subdata.data.find("\x00", key_off)]
-		node_type = item.get("I")
-		mtobj_type = (node_type & 0xFF) | (((node_type & 0xFF00) << 8) & 0xFFFF0000)
-		item.skip(0x10)
-		print "\t", key, hex(mtobj_type)
-	
-	
-
 	
 if __name__ == '__main__':
 	parse(sys.argv[1])
