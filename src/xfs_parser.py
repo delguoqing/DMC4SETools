@@ -51,9 +51,10 @@ def parse_object(xml_defs, i, blk, depth=0):
 	def log(*args):
 		print indent + " ".join(map(str, args))
 	for i, (name, node_type) in enumerate(xml_def):
-		log("offset = 0x%x, retrieving value for %s 0x%x" % (blk.offset, name, node_type))
 		nn = blk.get("I") & 0x7FFF
 		base_type = node_type & 0xFF
+		node_size = node_type >> 16
+		log("offset = 0x%x, retrieving value for %s 0x%x, unit_size=0x%x" % (blk.offset - 4, name, node_type, node_size))
 		# assert nn == 1, "nn=%d, offset=0x%x" % (nn, blk.offset)
 		for j in xrange(nn):
 			if base_type == 6:
@@ -63,7 +64,7 @@ def parse_object(xml_defs, i, blk, depth=0):
 			elif base_type == 0x14:
 				v = blk.get("4f")
 			elif base_type == 0x3:
-				v = blk.get("B")
+				v = bool(blk.get("B"))
 			elif base_type == 0x9:
 				v = blk.get("H")
 			elif base_type == 0x1:
