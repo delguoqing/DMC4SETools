@@ -43,11 +43,27 @@ def load_raw(filepath):
 		
 def import_action(motion, armature, motion_name, bind_pose, rotation_resample=False):
 	action = bpy.data.actions.new(name=motion_name)
+	# force Blender to save even if it has no users
 	action.use_fake_user = True
-	action.target_user = armature.name
+	# a hint about which armature this action should be applied to
+	action.target_user = armature.name	
 	if armature.animation_data is None:
 		armature.animation_data_create()
 	armature.animation_data.action = action
+	# This dictionary maps 'bone_id' to 'bone_name'.
+	# In DMC4SE, bone_name is made up as "Bone" + str(bone_index), so 'bone_mapping' acts just
+	# like a 'bone_id' to 'bone_index' mapping.
+	#
+	# When artists create an animation, a set of bones is used. When artists create a model,
+	# another set of bones is used. If these two sets of bones match perfectly, you don't
+	# have a problem of applying animations.
+	# What if the two sets of bones don't match? Instead of fail to apply animations, you probably
+	# want the animations to be 'partially applied'. For example, the animation is created for
+	# a bone set with bones for extra addons, such as tail, cloak, etc, while the model uses
+	# a skeletal without those bones, you might want that the animation for the body part can
+	# be applied correctly. So, there must be a way to tell which bone matches which. That's why
+	# a unique 'bone_id' is used, it makes sharing animations between models much easier.
+	#
 	bone_mapping = armature["bone_mapping"]
 	pose_bones = armature.pose.bones
 	for bone_id, v in motion.items():
