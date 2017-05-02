@@ -3,7 +3,7 @@ import os
 import sys
 import bmesh
 import bpy
-import six
+from . import six
 import mathutils
 import json
 import zlib

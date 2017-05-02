@@ -3,7 +3,7 @@ import os
 import sys
 import bmesh
 import bpy
-import six
+from . import six
 import mathutils
 import json
 import zlib
@@ -48,17 +48,30 @@ def import_gtb(filepath):
 			mod.object = armature
 			mod.use_bone_envelopes = False
 			mod.use_vertex_groups = True
+		if msh.get("textures"):
+			cwd = os.path.split(filepath)[0]
+			apply_default_material(msh_obj, cwd, msh["textures"])
 	return {'FINISHED'}
 
 def import_mesh(name, msh, gtb):
 	has_skeleton = bool(gtb.get("skeleton"))
+	flip_v = msh.get("flip_v", False)
 	# bmesh start
 	bm = bmesh.new()
 	# vertices
 	for i in range(msh["vertex_num"]):
 		x, y, z = msh["position"][i * 3: i * 3 + 3]
-		bm.verts.new((x, -z, y))
+		vert = bm.verts.new((x, -z, y))
+		try:
+			nx, ny, nz = msh["normal"][i * 3: i * 3 + 3]
+		except IndexError:
+			nx, ny, nz = 0.0, 0.0, 0.0
+		vert.normal = (nx, -nz, ny)
 	ENSURE_LUT(bm.verts)
+	# uv layer
+	uv_layers = []
+	for i in range(msh["uv_count"]):
+		uv_layers.append(bm.loops.layers.uv.new("UV%d" % i))
 	# faces
 	used_faces = set()
 	def NEW_FACE(idxs):
@@ -73,11 +86,17 @@ def import_mesh(name, msh, gtb):
 				bm.verts.new((co.x, co.y, co.z))
 				ENSURE_LUT(bm.verts)
 			face = [ bm.verts[-3], bm.verts[-2], bm.verts[-1] ]
-			bm.faces.new(face)
 		else:
 			used_faces.add(dup_face)
 			face = [ bm.verts[idx] for idx in idxs ]
-			bm.faces.new(face)
+		bmface = bm.faces.new(face)
+		for loop_idx, loop in enumerate(bmface.loops):
+			for uv_layer_idx, uv_layer in enumerate(uv_layers):
+				uv = msh["uv%d" % uv_layer_idx][idxs[loop_idx] * 2: idxs[loop_idx] * 2 + 2]
+				if flip_v:
+					uv[1] = 1.0 - uv[1]
+				loop[uv_layer].uv = uv
+			
 	for i in range(0, msh["index_num"], 3):
 		NEW_FACE( msh["indices"][i: i + 3] )
 	ENSURE_LUT(bm.faces)
@@ -98,15 +117,11 @@ def import_mesh(name, msh, gtb):
 		bpy.ops.object.mode_set()
 	if msh.get("double_sided"):
 		pass
-	if msh.get("flip_v"):
-		pass
 	obj.select = False
 	# create vertex groups for skinning
 	max_involved_joint = msh.get("max_involved_joint", 0)
 	if not has_skeleton or max_involved_joint <= 0:
 		return obj
-	for bone_name in gtb["skeleton"]["name"]:
-		obj.vertex_groups.new(bone_name)
 	# assign vertex weights
 	for i in range(msh["vertex_num"]):
 		joints = msh["joints"][i * max_involved_joint: (i + 1) * max_involved_joint]
@@ -115,10 +130,38 @@ def import_mesh(name, msh, gtb):
 			if not weight:
 				continue
 			joint_name = gtb["skeleton"]["name"][joint]
+			if joint_name not in obj.vertex_groups:
+				obj.vertex_groups.new(joint_name)
 			group = obj.vertex_groups[joint_name]
 			group.add([i], weight, "REPLACE")
 	return obj
 		
+def apply_default_material(obj, texture_dir, textures):
+	if not textures:
+		return
+	mat = bpy.data.materials.new(name="%s_MAT" % obj.name)
+	obj.data.materials.append(mat)
+	slots = []
+	for texture_desc in textures:
+		texture_name, uv_layer = texture_desc[:2]
+		hints = texture_desc[2:]
+		slot = mat.texture_slots.add()
+		slot.use_map_color_diffuse = slot.use_map_color_emission = slot.use_map_normal = False
+		for hint in hints:
+			hint = hint.lower()
+			if "albedo" in hint or "diffuse" in hint:
+				slot.use_map_color_diffuse = True
+			elif "normal" in hint or "bump" in hint:
+				slot.use_map_normal = True
+				slot.normal_factor = 0.15
+		slot.uv_layer = "UV%d" % uv_layer
+		slot.texture = bpy.data.textures.get(texture_name) or bpy.data.textures.new(name=texture_name, type="IMAGE")
+		try:
+			slot.texture.image = bpy.data.images.get(texture_name) or bpy.data.images.load(os.path.join(texture_dir, texture_name))
+		except RuntimeError:
+			pass
+		slots.append(slot)
+			
 def import_armature(gtb):
 	skeleton = gtb["skeleton"]
 	parent_list = skeleton["parent"]
