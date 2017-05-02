@@ -50,6 +50,20 @@ class LoadMotionOperator(bpy.types.Operator):
 		armat.select = True
 		self._load_lmt_file("pl000_03", motion.replace("pl000", "pl000_03"))
 		
+	def load_motion_pl006(self, context, model, motion):
+		armat = context.scene.objects['armat_body']
+		bpy.ops.object.mode_set(mode='OBJECT')
+		bpy.context.scene.objects.active = armat
+		armat.select = True
+		self._load_lmt_file("pl006", motion)
+		armat.select = False
+
+		armat = context.scene.objects['armat_coat']
+		bpy.ops.object.mode_set(mode='OBJECT')
+		bpy.context.scene.objects.active = armat
+		armat.select = True
+		self._load_lmt_file("pl006_03", motion.replace("pl006", "pl006_03"))
+		
 	def _load_lmt_file(self, motion_folder, motion):
 		directory = os.path.join(os.environ["DMC4SE_DATA_DIR"], "motion/%s" % motion_folder)
 		if "/" in motion or "\\" in motion:
