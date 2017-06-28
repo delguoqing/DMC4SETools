@@ -422,11 +422,18 @@ class CModel(object):
 
 		for dp_index in xrange(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
+
 			vertices = parse_primitives(self, dp_info)
 			indices = self.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
 			util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
 			indices = map(lambda v: v - dp_info.index_min, indices)
 			assert dp_info.bounding_box_id in self.id_2_bounding_box
+			
+			# mesh for special use, looks like some outline
+			# that's just not useful for usual rendering
+			if dp_info.unknowns[0] == 0x1020:
+				continue
+			
 			if dump_type == DUMP_TYPE_OBJ:
 				obj_str = dump_obj(vertices, indices)
 				fout = open(out_path.replace(".obj", "_%d.obj" % dp_index), "w")
@@ -435,7 +442,8 @@ class CModel(object):
 			elif dump_type == DUMP_TYPE_COLLADA:
 				dump_collada(vertices, indices, collada_doc)
 			elif dump_type == DUMP_TYPE_GTB:
-				dump_gtb(vertices, indices, gtb)
+				material_name = self.material_names[dp_info.material_index]
+				dump_gtb(vertices, indices, material_name, gtb)
 		
 		# finish up dump
 		if dump_type == DUMP_TYPE_COLLADA:
@@ -580,11 +588,12 @@ def dump_collada(vertices, indices, doc):
 	geom_node = collada.scene.GeometryNode(mesh, [mat_node])
 	doc.scene.nodes[0].children.append(geom_node)
 
-def dump_gtb(vertices, indices, gtb):
+def dump_gtb(vertices, indices, mat_name, gtb):
 	v0 = vertices[0]
 	
 	msh = {"flip_v": 1, "double_sided": 0, "shade_smooth": True,
 		   "vertex_num": len(vertices), "index_num": len(indices)}
+	msh["textures"] = ((mat_name, 0), )
 	msh["indices"] = indices
 	msh["position"] = []
 	has_normal = "Normal" in v0
@@ -620,6 +629,7 @@ def dump_gtb(vertices, indices, gtb):
 			if weight_lack_num > 0:
 				msh["weights"].append(1.0 - sum(weights))
 				msh["weights"].extend([0.0] * (weight_lack_num - 1))
+				
 	
 	msh_idx = len(gtb["objects"])
 	msh_name = "msh%d" % msh_idx

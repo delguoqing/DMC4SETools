@@ -71,14 +71,24 @@ class LoadModelOperator(bpy.types.Operator):
 		self.get_load_pl_general(4)(context, model)
 		
 	def load_model_pl006(self, context, model):
-		self.get_load_pl_general(6)(context, model)
+		self.get_load_pl_general(6, constraint=self.constraint_pl006_ex01)(context, model)
 		
 	def load_model_pl006_ex00(self, context, model):
-		self.get_load_pl_general(6)(context, model)
+		self.get_load_pl_general(6, constraint=self.constraint_pl006_ex01)(context, model)
 
 	def load_model_pl006_ex01(self, context, model):
-		self.get_load_pl_general(6)(context, model)
+		self.get_load_pl_general(6, constraint=self.constraint_pl006_ex01)(context, model)
 
+	def constraint_pl006_ex01(self, body, head, hair, coat):
+		self._copy_transform(head, body, zip((0, 1, 2, 3, 4), (2, 3, 4, 5, 30)))
+		if hair:
+			self._copy_transform(hair, head, zip((0, 1), (1, 2)))
+		# original: 0 -> 2
+		
+		# 3, 4, 6, 7,2, 5
+		# 6,29,31,54,5,30
+		self._copy_transform(coat, body, zip((0, 3, 4, 6, 7,2, 5), (2, 6,29,31,54,5,30)))
+		
 	# Lady
 	def load_model_pl007(self, context, model):
 		self.get_load_pl_general(7, constraint=self.constraint_pl007)(context, model)

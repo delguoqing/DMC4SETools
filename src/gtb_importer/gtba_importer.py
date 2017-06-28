@@ -42,7 +42,10 @@ def load_raw(filepath):
 	return gtb
 		
 def import_action(motion, armature, motion_name, bind_pose, rotation_resample=False):
-	action = bpy.data.actions.new(name=motion_name)
+	if motion_name in bpy.data.actions:
+		action = bpy.data.actions[motion_name]
+	else:	# adding
+		action = bpy.data.actions.new(name=motion_name)
 	# force Blender to save even if it has no users
 	action.use_fake_user = True
 	# a hint about which armature this action should be applied to

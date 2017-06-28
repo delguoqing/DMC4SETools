@@ -53,21 +53,47 @@ def import_gtb(filepath):
 			apply_default_material(msh_obj, cwd, msh["textures"])
 	return {'FINISHED'}
 
+def dup_vertex(msh, i):
+	x, y, z = msh["position"][i * 3: i * 3 + 3]
+	msh["position"].extend((x, y, z))
+	try:
+		nx, ny, nz = msh["normal"][i * 3: i * 3 + 3]
+		msh["normal"].extend((nx, ny, nz))
+	except IndexError:
+		pass	# in case normal is not provided
+	for j in range(msh["uv_count"]):
+		u, v = msh["uv%d" % j][i * 2: i * 2 + 2]
+		msh["uv%d" % j].extend((u, v))
+	max_involved_joint = msh.get("max_involved_joint", 0)
+	msh["vertex_num"] += 1
+	if max_involved_joint <= 0:
+		return 
+	joints = msh["joints"][i * max_involved_joint: (i + 1) * max_involved_joint]
+	weights = msh["weights"][i * max_involved_joint: (i + 1) * max_involved_joint]
+	msh["joints"].extend(joints)
+	msh["weights"].extend(weights)
+	
 def import_mesh(name, msh, gtb):
 	has_skeleton = bool(gtb.get("skeleton"))
 	flip_v = msh.get("flip_v", False)
 	# bmesh start
 	bm = bmesh.new()
-	# vertices
-	for i in range(msh["vertex_num"]):
-		x, y, z = msh["position"][i * 3: i * 3 + 3]
+	
+	
+	def create_bmesh_vert(msh_i):
+		x, y, z = msh["position"][msh_i * 3: msh_i * 3 + 3]
 		vert = bm.verts.new((x, -z, y))
 		try:
-			nx, ny, nz = msh["normal"][i * 3: i * 3 + 3]
+			nx, ny, nz = msh["normal"][msh_i * 3: msh_i * 3 + 3]
 		except IndexError:
 			nx, ny, nz = 0.0, 0.0, 0.0
 		vert.normal = (nx, -nz, ny)
+		
+	# vertices
+	for i in range(msh["vertex_num"]):
+		create_bmesh_vert(i)
 	ENSURE_LUT(bm.verts)
+	
 	# uv layer
 	uv_layers = []
 	for i in range(msh["uv_count"]):
@@ -82,10 +108,14 @@ def import_mesh(name, msh, gtb):
 		# in case we have duplicated face, we duplicate vertices
 		if dup_face in used_faces:
 			for idx in idxs:
-				co = bm.verts[idx].co
-				bm.verts.new((co.x, co.y, co.z))
-				ENSURE_LUT(bm.verts)
-			face = [ bm.verts[-3], bm.verts[-2], bm.verts[-1] ]
+				dup_vertex(msh, idx)
+				
+			istart = len(bm.verts)
+			for j in range(3):
+				create_bmesh_vert(istart + j)
+			ENSURE_LUT(bm.verts)
+			
+			return NEW_FACE((istart, istart + 1, istart + 2))
 		else:
 			used_faces.add(dup_face)
 			face = [ bm.verts[idx] for idx in idxs ]

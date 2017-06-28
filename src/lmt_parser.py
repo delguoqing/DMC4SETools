@@ -28,6 +28,8 @@ MODEL_TRANS = (MODEL_ROT, MODEL_POS, MODEL_SCALE)
 
 COMPRESS = True
 
+EXPORT_SEPARATE_FILE = True
+
 class LMT(object):
 	
 	def read(self, getter):
@@ -174,7 +176,7 @@ class track(object):
 		f = 0
 		for i, (t, x, y, z, w) in enumerate(self.keys):
 			self.keys[i] = (f, x, y, z, w)
-			if True:
+			if False:
 				print_keyframe(i, f, x, y, z, w)
 			f += t
 				
@@ -427,6 +429,15 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 	
 	f.close()
 	
+	if EXPORT_SEPARATE_FILE:
+		for motion_i in xrange(len(lmt.motion_list)):
+			dump_single(lmt, motion_i, out_path.replace(".gtba", "_%d.gtba" % motion_i))
+	else:
+		dump_all(lmt, out_path)
+		
+	return lmt
+	
+def dump_all(lmt, out_path):
 	# dump to gtba format
 	# 	poses: will be imported into pose library, the 1st pose will be set as a default
 	#		   pose which is also a very convenient way to debug your exporter code.
@@ -457,15 +468,35 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 		if motion is None:
 			continue
 		motion_name = motion_name_fmt % i
-		motion_data = gtba["animations"][motion_name] = {}
-		for track in motion.track_list:
-			bone_trans = motion_data.setdefault(track.bone_id, [None, None, None])
-			if track.trans_type in MODEL_TRANS:
-				j = [MODEL_POS, MODEL_ROT, MODEL_SCALE].index(track.trans_type)
-			else:
-				j = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
-			bone_trans[j] = track.keys
-			
+		gtba["animations"][motion_name] = serialize_motion(motion)
+
+	write_file(gtba, out_path)			
+
+def dump_single(lmt, motion_i, out_path):
+	gtba = {
+		"pose": {},
+		"animations": {}
+	}
+	motion = lmt.motion_list[motion_i]
+	if motion is None:
+		return
+	motion_name_fmt = "motion_%d"
+	motion_name = motion_name_fmt % motion_i
+	gtba["animations"][motion_name] = serialize_motion(motion)
+	write_file(gtba, out_path)
+
+def serialize_motion(motion):
+	motion_data = {}
+	for track in motion.track_list:
+		bone_trans = motion_data.setdefault(track.bone_id, [None, None, None])
+		if track.trans_type in MODEL_TRANS:
+			j = [MODEL_POS, MODEL_ROT, MODEL_SCALE].index(track.trans_type)
+		else:
+			j = [BONE_POS, BONE_ROT, BONE_SCALE].index(track.trans_type)
+		bone_trans[j] = track.keys
+	return motion_data
+
+def write_file(gtba, out_path):
 	data = json.dumps(gtba, indent=2, sort_keys=True, ensure_ascii=True)
 	if COMPRESS:
 		f = open(out_path, "wb")
@@ -474,8 +505,6 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 		f = open(out_path, "w")
 		f.write(data)
 	f.close()
-	
-	return lmt
 	
 def test_all(test_count=-1):
 	root = os.path.join(os.environ["DMC4SE_DATA_DIR"], "motion")
@@ -495,6 +524,11 @@ def test_all(test_count=-1):
 					
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
-		lmt = parse(sys.argv[1])
+		lmt_path = sys.argv[1]
+		if len(sys.argv) > 2:
+			out_path = sys.argv[2]
+		else:
+			out_path = lmt_path.replace(".lmt", ".gtba")
+		lmt = parse(lmt_path, out_path)
 	else:
 		test_all()
