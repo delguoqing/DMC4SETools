@@ -56,11 +56,8 @@ def import_gtb(filepath):
 def dup_vertex(msh, i):
 	x, y, z = msh["position"][i * 3: i * 3 + 3]
 	msh["position"].extend((x, y, z))
-	try:
-		nx, ny, nz = msh["normal"][i * 3: i * 3 + 3]
-		msh["normal"].extend((nx, ny, nz))
-	except IndexError:
-		pass	# in case normal is not provided
+	nx, ny, nz = msh["normal"][i * 3: i * 3 + 3]
+	msh["normal"].extend((nx, ny, nz))
 	for j in range(msh["uv_count"]):
 		u, v = msh["uv%d" % j][i * 2: i * 2 + 2]
 		msh["uv%d" % j].extend((u, v))
@@ -76,17 +73,16 @@ def dup_vertex(msh, i):
 def import_mesh(name, msh, gtb):
 	has_skeleton = bool(gtb.get("skeleton"))
 	flip_v = msh.get("flip_v", False)
+	# in case normal is not provided
+	if "normal" not in msh:
+		msh["normal"] = [0.0] * (3 * msh["vertex_num"])
 	# bmesh start
 	bm = bmesh.new()
-	
-	
+
 	def create_bmesh_vert(msh_i):
 		x, y, z = msh["position"][msh_i * 3: msh_i * 3 + 3]
 		vert = bm.verts.new((x, -z, y))
-		try:
-			nx, ny, nz = msh["normal"][msh_i * 3: msh_i * 3 + 3]
-		except IndexError:
-			nx, ny, nz = 0.0, 0.0, 0.0
+		nx, ny, nz = msh["normal"][msh_i * 3: msh_i * 3 + 3]
 		vert.normal = (nx, -nz, ny)
 		
 	# vertices
