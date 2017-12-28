@@ -192,7 +192,7 @@ def import_armature(gtb):
 	skeleton = gtb["skeleton"]
 	parent_list = skeleton["parent"]
 	bone_mat_list = convert_to_native_matrix(skeleton["matrix"])
-	bone_id = gtb.get("bone_id")
+	bone_id = skeleton["bone_id"]
 	bone_name_list = skeleton["name"]
 	bone_num = len(parent_list)
 	
