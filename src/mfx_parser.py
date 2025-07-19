@@ -48,15 +48,15 @@ class CMfxEntry(object):
 		field_C = getter.get("I")
 		field_10 = getter.get("I")
 		field_14 = getter.get("I")
-		print string, string2, field_8_a, hex(field_14)
+		print(string, string2, field_8_a, hex(field_14))
 		# parse an entry according to different types
 		if field_8_a == 9:
 			field_18 = getter.get("H")
-			print "attribute count", field_18
+			print("attribute count", field_18)
 			getter.skip(2 + 4)
 			size = 0
 			max_size = 0
-			for i in xrange(field_18):
+			for i in range(field_18):
 				_str_offset = getter.get("I")
 				string = string_table.get_string(_str_offset)
 				v = getter.get("I")
@@ -73,9 +73,9 @@ class CMfxEntry(object):
 				else:
 					size = comp_count * (0, 4, 2, 2, 2, 2, 2, 1, 1, 1, 1, 4, 4, 1, 4)[comp_type]
 				max_size = max(max_size, base_off + size)
-				print "name:%s, type:0x%x, count:%d, off=0x%x, size:0x%x, instancing:%d, index:%d" % (
+				print("name:%s, type:0x%x, count:%d, off=0x%x, size:0x%x, instancing:%d, index:%d" % (
 					string, comp_type, comp_count, base_off, size, instancing, index,
-				)
+				))
 				
 				# dump input layout
 				self.input_layout.append({
@@ -89,7 +89,7 @@ class CMfxEntry(object):
 				if index != 0:
 					self.input_layout[-1]["sematics"] += str(index)
 					
-			print "total size", max_size
+			print("total size", max_size)
 					
 		elif field_8_a == 7:
 			field_18 = getter.get("H")
@@ -117,7 +117,7 @@ def parse(path):
 	for i, mfx_entry_offset in enumerate(header.mfx_entry_offsets):
 		getter.seek(mfx_entry_offset)
 		mfx_entry = CMfxEntry()
-		print i,
+		print(i, end=' ')
 		mfx_entry.read(getter, string_table)
 		mfx_entries.append(mfx_entry)
 		

@@ -39,22 +39,22 @@ class LMT(object):
 		assert reserved == 0x43
 		# motion count
 		motion_num = getter.get("H")
-		print "motion_num", motion_num
+		print("motion_num", motion_num)
 		# motion list
 		self.motion_list = motion_list = []
 		motion_offset_list = getter.get("%dI" % motion_num, force_tuple=True)
 		for i, motion_offset in enumerate(motion_offset_list):
 			if motion_offset == 0:
 				motion_list.append(None)
-				print "motion 0x%x offset = NULL" % i
+				print("motion 0x%x offset = NULL" % i)
 				continue
 			getter.seek(motion_offset)
-			print "======================"
-			print "motion 0x%x offset = 0x%x" % (i, motion_offset)
+			print("======================")
+			print("motion 0x%x offset = 0x%x" % (i, motion_offset))
 			_motion = motion()
 			_motion.read(getter.block(0x3c), getter)
 			motion_list.append(_motion)
-			print 
+			print() 
 			
 # motion
 class motion(object):
@@ -68,7 +68,7 @@ class motion(object):
 		track_num = getter.get("I")
 		frame_max = getter.get("I")
 		loop_frame = getter.get("i")	# -1: NoLoop, N: (N, frameMax)
-		print "loop_frame: %d" % loop_frame
+		print("loop_frame: %d" % loop_frame)
 		getter.skip(0x14)
 		field_30 = getter.get("I")
 		field_33 = (field_30 >> 24) & 0xFF
@@ -78,18 +78,18 @@ class motion(object):
 		self.track_list = track_list = []
 		if (field_33 & 1) == 0:
 			lmt.seek(track_off)
-			for track_index in xrange(track_num):
-				print "track offset = 0x%x" % (track_off + track_index * track.SIZE)
+			for track_index in range(track_num):
+				print("track offset = 0x%x" % (track_off + track_index * track.SIZE))
 				lmt.seek(track_off + track_index * track.SIZE)
 				_track = track()
 				_track.read(lmt.block(track.SIZE), lmt)
 				track_list.append(_track)
 		else:
-			print "[WARNING] not skeletal animation!"
+			print("[WARNING] not skeletal animation!")
 		
 		# mSequence
 		if offset_34 != 0:
-			print "offset_34 = 0x%x, flag=%d" % (offset_34, (field_33 & 2 == 0))
+			print("offset_34 = 0x%x, flag=%d" % (offset_34, (field_33 & 2 == 0)))
 			if (field_33 & 2) == 0:
 				getter.seek(offset_34)
 				_struc_8 = struc_8()
@@ -100,10 +100,10 @@ class motion(object):
 		# mKeyFrameWork
 		if (field_30 >> 16) & 0x1F:
 			# offset_38 is valid
-			print "offset_38 = 0x%x" % offset_38
+			print("offset_38 = 0x%x" % offset_38)
 			if field_30 & 0x4000000:
 				n = (field_30 >> 16) & 0x1F
-				print "field_32 & 0x1F =", n
+				print("field_32 & 0x1F =", n)
 				
 # bone keyframe
 class track(object):
@@ -140,10 +140,10 @@ class track(object):
 		
 		# keyframe data are stored in a fairly compact format
 		def print_keyframe(i, f, v0, v1, v2, v3):
-			print "\tframe=%d, eval=(%f, %f, %f, %f)" % (f, v0, v1, v2, v3)
-		print "checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
+			print("\tframe=%d, eval=(%f, %f, %f, %f)" % (f, v0, v1, v2, v3))
+		print("checking keyframe offset = 0x%x, size = 0x%x, type = %d" % (
 			keyframe_offset, keyframes_size, key_type
-		)
+		))
 		if keyframe_offset != 0:
 			lmt.seek(keyframe_offset)
 			keyframes = lmt.block(keyframes_size)
@@ -183,19 +183,19 @@ class track(object):
 		assert float_4 == 1.0
 		assert type_2 == 0
 		
-		print "track: key_type=%d, trans_type=%d, type_2=%d, bone_id=%d, float_4=%f" % (
-			key_type, trans_type, type_2, bone_id, float_4)
+		print("track: key_type=%d, trans_type=%d, type_2=%d, bone_id=%d, float_4=%f" % (
+			key_type, trans_type, type_2, bone_id, float_4))
 		if trans_type in (BONE_ROT, MODEL_ROT):
-			print "ROTATION",
+			print("ROTATION", end=' ')
 			util.assert_quat(frame_0)
 		elif trans_type in (BONE_POS, MODEL_POS):
-			print "POSITION",
+			print("POSITION", end=' ')
 		elif trans_type in (BONE_SCALE, MODEL_SCALE):
-			print "SCALE   ",
+			print("SCALE   ", end=' ')
 		else:
 			assert False, "unsupported type! %d" % trans_type
-		print frame_0
-		print
+		print(frame_0)
+		print()
 		
 		# assert model root transformation
 		if bone_id == 255:
@@ -207,7 +207,7 @@ class track(object):
 		keyframe_num = keyframes_size / 5
 		FAC = struct.unpack(">f", "\x3B\x04\x21\x08")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v = keyframes.get("5B")
 			v0 = (((v[0] << 1) | (v[1] & 1)) - 8) * FAC * range_scales[0] + range_bases[0]
 			v1 = ((((v[1] >> 1) << 2) | (v[2] & 0x3)) - 8) * FAC * range_scales[1] + range_bases[1]
@@ -229,7 +229,7 @@ class track(object):
 		keyframe_num = keyframes_size / 6
 		keys = []
 		FAC = struct.unpack(">f", "\x3A\x01\x02\x04")[0]
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v = keyframes.get("HHH")
 			v0 = ((v[0] & 0x7FF) - 8) * FAC * range_scales[0] + range_bases[0]
 			v1 = ((((v[0] >> 11) << 6) | (v[1] & 0x3F)) - 8) * FAC * range_scales[1] + range_bases[1]
@@ -251,7 +251,7 @@ class track(object):
 		keyframe_num = keyframes_size / 4
 		FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v = keyframes.get("I")
 			t = (v >> 28) & 0xF
 			v0 = range_bases[0]
@@ -273,7 +273,7 @@ class track(object):
 		keyframe_num = keyframes_size / 4
 		FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v = keyframes.get("I")
 			t = (v >> 28) & 0xF
 			v0 = range_bases[0]
@@ -295,7 +295,7 @@ class track(object):
 		keyframe_num = keyframes_size / 4
 		FAC = struct.unpack(">f", "\x38\x80\x20\x08")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v = keyframes.get("I")
 			t = (v >> 28) & 0xF
 			v0 = (((v >> 0) & 0x3FFF) - 8) * FAC * range_scales[0] + range_bases[0]
@@ -317,7 +317,7 @@ class track(object):
 		keyframe_num = keyframes_size / 4
 		FAC = struct.unpack(">f", "\x3C\x12\x49\x25")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v = keyframes.get("I")
 			t = (v >> 28) & 0xF
 			v0 = ((v >> 0 & 0x7F) - 8) * FAC * range_scales[0] + range_bases[0]
@@ -339,7 +339,7 @@ class track(object):
 		keyframe_num = keyframes_size / 8
 		FAC = struct.unpack(">f", "\x38\x80\x00\x00")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			q = keyframes.get("Q")
 			v3 = ((q >> 0) & 0x3FFF) << 2
 			if v3 & 0x8000: v3 -= (1 << 16)
@@ -369,7 +369,7 @@ class track(object):
 		keyframe_num = keyframes_size / 4
 		FAC = struct.unpack(">f", "\x3B\x88\x88\x89")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v0, v1, v2, t = keyframes.get("BBBB")
 			v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
 			v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
@@ -383,7 +383,7 @@ class track(object):
 		keyframe_num = keyframes_size / 8
 		FAC = struct.unpack(">f", "\x37\x80\x08\x01")[0]
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v0, v1, v2, t = keyframes.get("HHHH")
 			v0 = (v0 - 8) * FAC * range_scales[0] + range_bases[0]
 			v1 = (v1 - 8) * FAC * range_scales[1] + range_bases[1]
@@ -396,7 +396,7 @@ class track(object):
 		assert keyframes_size % 16 == 0
 		keyframe_num = keyframes_size / 16
 		keys = []
-		for i in xrange(keyframe_num):
+		for i in range(keyframe_num):
 			v0, v1, v2, t = keyframes.get("fffI")
 			keys.append((t, v0, v1, v2, 0.0))
 		return keys
@@ -430,7 +430,7 @@ def parse(lmt_path, out_path="objs/motion.gtba"):
 	f.close()
 	
 	if EXPORT_SEPARATE_FILE:
-		for motion_i in xrange(len(lmt.motion_list)):
+		for motion_i in range(len(lmt.motion_list)):
 			dump_single(lmt, motion_i, out_path.replace(".gtba", "_%d.gtba" % motion_i))
 	else:
 		dump_all(lmt, out_path)
@@ -448,7 +448,7 @@ def dump_all(lmt, out_path):
 	}
 	motion_count = len(lmt.motion_list)
 	default_pose = {}
-	for motion_i in xrange(motion_count):
+	for motion_i in range(motion_count):
 		motion = lmt.motion_list[motion_i]
 		if motion is None:
 			continue
@@ -511,8 +511,8 @@ def test_all(test_count=-1):
 	for top, dirs, files in os.walk(root):
 		for fname in files:
 			if fname.endswith(".lmt"):
-				print "-" * 30
-				print "parsing", fname
+				print("-" * 30)
+				print("parsing", fname)
 				# print "fullpath", os.path.join(top, fname)
 				in_path = os.path.join(top, fname)
 				out_path = in_path.replace(".lmt", ".gtba")

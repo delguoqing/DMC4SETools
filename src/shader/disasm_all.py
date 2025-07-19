@@ -14,10 +14,10 @@ def run(root):
 	for top, dirs, files in os.walk(root):
 		for fname in files:
 			if fname.endswith(".SPK"):
-				print "finding DXBC in", fname
+				print("finding DXBC in", fname)
 				spk_path = os.path.join(top, fname)
 				bytecodes.extend(get_dxbc(spk_path))
-				print "DXBC Set Size = %d" % (len(bytecodes))
+				print("DXBC Set Size = %d" % (len(bytecodes)))
 				
 	for i, dxbc in enumerate(bytecodes):
 		tmp = open("tmp.dxbc", "wb")
@@ -25,12 +25,12 @@ def run(root):
 		tmp.close()
 		
 		cmd = "%s /dumpbin /Fc tmp\\%d.txt tmp.dxbc" % (FXC, i)
-		print cmd
+		print(cmd)
 		subprocess.call(cmd)
 	
 def get_dxbc(spk_path):
 	f = open(spk_path, "rb")
-	bytecodes = map(lambda v: "DXBC" + v, f.read().split("DXBC")[1:])
+	bytecodes = ["DXBC" + v for v in f.read().split("DXBC")[1:]]
 	f.close()
 	return bytecodes
 

@@ -43,7 +43,7 @@ def parse(spk_fpath):
 def _dump_shaders(spk_metadata, dxbc, shader_info_off, start_index, shader_count,
 				  ext=".txt"):
 	spk_metadata.seek(shader_info_off + start_index * 0xc)
-	for shader_index in xrange(start_index, start_index + shader_count):
+	for shader_index in range(start_index, start_index + shader_count):
 		shader_size = spk_metadata.get("I") >> 0xA
 		if shader_size == 0:
 			continue
@@ -57,7 +57,7 @@ def _dump_shaders(spk_metadata, dxbc, shader_info_off, start_index, shader_count
 		tmp.close()
 		
 		cmd = "%s /dumpbin /Fc tmp\\%d%s tmp.dxbc" % (FXC, shader_index, ext)
-		print cmd
+		print(cmd)
 		subprocess.call(cmd)
 
 def _dump_one_shader(spk_metadata, dxbc, shader_info_off, index, name):
@@ -75,7 +75,7 @@ def _dump_one_shader(spk_metadata, dxbc, shader_info_off, index, name):
 	tmp.close()
 		
 	cmd = "%s /dumpbin /Fc tmp\\%s tmp.dxbc" % (FXC, name)
-	print cmd
+	print(cmd)
 	subprocess.call(cmd)
 		
 def dump_vertex_shaders(spk_metadata, dxbc, index, count):
@@ -90,18 +90,18 @@ def dump_pixel_shaders(spk_metadata, dxbc, index, count):
 
 def dump_shader_pair_info(spk_metadata, shader_pair_count):
 	pair_info_list = get_shader_pair_info(spk_metadata, shader_pair_count)
-	for pair_index in xrange(shader_pair_count):
+	for pair_index in range(shader_pair_count):
 		vs_index, ps_index, gs_index, slot_desc_hashes, unknown_values = pair_info_list[pair_index]
-		print "========================="
-		print "Shader Pair %d" % pair_index
-		print "Shaders:", vs_index, ps_index, gs_index,
-		print "Input Slot Desc Hashes", map(hex, slot_desc_hashes)
-		print "Unknowns", map(hex, unknown_values)
+		print("=========================")
+		print("Shader Pair %d" % pair_index)
+		print("Shaders:", vs_index, ps_index, gs_index, end=' ')
+		print("Input Slot Desc Hashes", list(map(hex, slot_desc_hashes)))
+		print("Unknowns", list(map(hex, unknown_values)))
 
 def get_shader_pair_info(spk_metadata, shader_pair_count):
 	spk_metadata.seek(0x4020)
 	pair_info_list = []
-	for pair_index in xrange(shader_pair_count):
+	for pair_index in range(shader_pair_count):
 		unknown_values = []
 		pair_info = spk_metadata.block(0x2c)
 		block0_index = pair_info.get("I")
@@ -146,16 +146,16 @@ def assert_shader_pair_info_list(pair_info_list, vs_count, ps_count, gs_count):
 		if gs_index != -1:
 			gs_range.add(gs_index)
 
-	assert sorted(list(vs_range)) == range(vs_count)
-	assert sorted(list(ps_range)) == range(ps_count)
-	assert sorted(list(gs_range)) == range(gs_count)
+	assert sorted(list(vs_range)) == list(range(vs_count))
+	assert sorted(list(ps_range)) == list(range(ps_count))
+	assert sorted(list(gs_range)) == list(range(gs_count))
 	
 def test_all():
 	SA_ROOT = os.path.join(os.environ["DMC4SE_DATA_DIR"], "sa")
 	for top, dirs, files in os.walk(SA_ROOT):
 		for fname in files:
 			if fname.endswith(".SPK"):
-				print "parsing", fname
+				print("parsing", fname)
 				parse(os.path.join(top, fname))
 
 def find_shader(input_layout_index):
@@ -165,12 +165,12 @@ def find_shader(input_layout_index):
 	for top, dirs, files in os.walk(SA_ROOT):
 		for fname in files:
 			if fname.endswith(".SPK"):
-				print "parsing", fname
+				print("parsing", fname)
 				spk_header, spk_metadata, dxbc, shader_pair_info_list = \
 															parse(os.path.join(top, fname))
 				for vs_index, ps_index, gs_index, slot_descs_hashes, unkown_values in shader_pair_info_list:
 					cmp_index = HASH2INDEX[slot_descs_hashes[0] >> 0xc]
-					print "comparing with", cmp_index, input_layout_index
+					print("comparing with", cmp_index, input_layout_index)
 					if cmp_index == input_layout_index:
 						spk_metadata.seek(0xc)
 						vs_info_off = spk_metadata.get("I")

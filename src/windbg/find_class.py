@@ -38,11 +38,11 @@ def run(class_hash):
 		hashcode = metainfo[7]
 		classname = DBG("da %x" % metainfo[1]).split()[1].strip("\"")
 		if hashcode == class_hash:
-			print "offset = %x, %s" % (offset, classname)
+			print("offset = %x, %s" % (offset, classname))
 			vtable = metainfo[0]
-			print "vtable: %x" % vtable
+			print("vtable: %x" % vtable)
 			methods = parse( DBG("dd %x" % (vtable - 36)) )
-			print "Method: Get Extendsion At: %x" % methods[0]
+			print("Method: Get Extendsion At: %x" % methods[0])
 			break
 		offset = metainfo[5]
 	
@@ -95,7 +95,7 @@ def rfind_parent_all():
 	for offset, metainfo in iter_metainfo():
 		chain = _rfind_parent(metainfo)
 		chain_map[chain[0]] = tuple(chain)
-		print "collected: %s" % chain[0]
+		print("collected: %s" % chain[0])
 	return chain_map
 
 if __name__ == '__main__':
@@ -105,13 +105,13 @@ if __name__ == '__main__':
 	elif find_method == "parent":
 		chain = rfind_parent(sys.argv[2])
 		if not chain:
-			print "not found!"
+			print("not found!")
 		else:
-			print " -> ".join(chain)
+			print(" -> ".join(chain))
 	elif find_method == "parent_all":
 		chain_map = rfind_parent_all()
 		f = open(sys.argv[2], "wb")
-		for chain in chain_map.itervalues():
+		for chain in chain_map.values():
 			f.write((" -> ".join(chain)) + "\n")
 		f.close()
 	else:
@@ -120,6 +120,6 @@ if __name__ == '__main__':
 		elif find_method == "string":
 			offset = rfind_string(int(sys.argv[2], 16), sys.argv[3])
 		if offset is not None:
-			print "Offset = 0x%x" % offset
+			print("Offset = 0x%x" % offset)
 		else:
-			print "not found!"			
+			print("not found!")			

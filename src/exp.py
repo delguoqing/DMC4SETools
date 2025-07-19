@@ -1,6 +1,6 @@
 import os
 import sys
-import cPickle
+import pickle
 import ctypes
 import win32con
 
@@ -15,12 +15,12 @@ WaitForSingleObject = ctypes.windll.kernel32.WaitForSingleObject
 	
 def get_func():
 	f = open("windbg/hashtable.bin", "rb")
-	table1, table2 = cPickle.load(f)
-	print table2[0x330]
+	table1, table2 = pickle.load(f)
+	print(table2[0x330])
 	def func(v, result, depth=0):
 		def debug(*args):
-			print "\t" * depth,
-			print " ".join(map(str, args))
+			print("\t" * depth, end=' ')
+			print(" ".join(map(str, args)))
 		debug("-------")
 		debug("depth %d" % depth)
 		if v & 0xFFFFF000:
@@ -49,7 +49,7 @@ def test_get_func(v):
 	func = get_func()
 	result = []
 	func(v, result)
-	print map(hex, result)
+	print(list(map(hex, result)))
 
 def find_proc_id(proc_name):
 	class PROCESSENTRY32(ctypes.Structure):
@@ -70,7 +70,7 @@ def find_proc_id(proc_name):
 	pe.dwSize = 296	
 	has_next = ctypes.windll.kernel32.Process32First(hSnapshot, ctypes.byref(pe))
 	while (has_next):
-		print pe.szExeFile, pe.th32ProcessID
+		print(pe.szExeFile, pe.th32ProcessID)
 		has_next = ctypes.windll.kernel32.Process32Next(hSnapshot, ctypes.byref(pe))
 		if pe.szExeFile == proc_name:
 			return pe.th32ProcessID
@@ -81,9 +81,9 @@ def dll_inject(proc_id_or_name, dll_path):
 		proc_id = int(proc_id_or_name)
 	except ValueError:	# TODO: support proc_name later
 		proc_id = find_proc_id(proc_id_or_name)
-		print "proc_name: %s, proc_id: %r" % (proc_id_or_name, proc_id)
+		print("proc_name: %s, proc_id: %r" % (proc_id_or_name, proc_id))
 	if not proc_id:
-		print "No process can be found!!"
+		print("No process can be found!!")
 		return
 	# Attach
 	hHandle = OpenProcess(

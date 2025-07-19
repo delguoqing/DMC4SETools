@@ -21,7 +21,7 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 		init_text_buf(text_buf)
 		
 	dst_buf = []
-	src_buf = collections.deque(map(ord, data))
+	src_buf = collections.deque(list(map(ord, data)))
 	src_len = len(src_buf)
 	group_idx = 0
 
@@ -44,13 +44,13 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 					src_offset = src_len - len(src_buf) - 1
 					dst_offset = len(dst_buf)
 					size = 0
-					for i in xrange(8):
+					for i in range(8):
 						if flags & (1 << i):
 							size += 1
 						else:
 							size += 2
-					print("src@offset=%s, dst@offset=%s, flags=%s, %s, size=%s" % \
-						(hex(src_offset+12), hex(dst_offset), bin(flags & 0xFF), hex(flags & 0xFF), hex(size)))
+					print(("src@offset=%s, dst@offset=%s, flags=%s, %s, size=%s" % \
+						(hex(src_offset+12), hex(dst_offset), bin(flags & 0xFF), hex(flags & 0xFF), hex(size))))
 				bit = 0
 				
 			if flags & 1:
@@ -70,12 +70,12 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 					if dst_offset <= N:
 						if (dst_offset < F and (offset >= N - F + dst_offset or offset < N - F)) or \
 							(dst_offset >= F and dst_offset <= offset + F < N - F):
-							print("refing init window src@offset=%s, dst@offset=%s, window@%s, size=%s" % (hex(src_offset), hex(dst_offset), hex(offset), hex(length)))
-							print(hex(i), hex(j), hex(offset), hex(length))
+							print(("refing init window src@offset=%s, dst@offset=%s, window@%s, size=%s" % (hex(src_offset), hex(dst_offset), hex(offset), hex(length))))
+							print((hex(i), hex(j), hex(offset), hex(length)))
 							copy_init = True
 					
 				copied = ""
-				for k in xrange(length):
+				for k in range(length):
 					c = text_buf[(offset + k) % N]
 					dst_buf.append(c)
 					text_buf[r] = c
@@ -83,7 +83,7 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 					if debug:
 						copied += chr(c)
 				if debug and copy_init:
-					print("copied: %s" % repr(copied))
+					print(("copied: %s" % repr(copied)))
 					
 			flags >>= 1
 			bit += 1
@@ -133,7 +133,7 @@ class getter(object):
 	def pad(self, size, pad_pattern="\x00"):
 		pad_data = self.get_raw(size)
 		pattern_size = len(pad_pattern)
-		for i in xrange(size / pattern_size):
+		for i in range(size / pattern_size):
 			assert pad_pattern.startswith(pad_data[i * pattern_size: (i + 1) * pattern_size])
 	
 	def align(self, size):
@@ -216,7 +216,7 @@ def dump_atlas_layout_use_mapping(polys, mapping, out_fname, ref_textures=None):
 	
 	tex_count = max(mapping.values()) + 1
 	polys_groups = []
-	for i in xrange(tex_count):
+	for i in range(tex_count):
 		polys_groups.append([])
 	
 	for atlas, tex in sorted(mapping.items()):
@@ -268,7 +268,7 @@ def _dump_atlas_layout(polys, out_fname, ref_tex=None):
 	for i, fvals in enumerate(polys):
 	
 		fvals = list(fvals)
-		for j in xrange(0, len(fvals), 2):
+		for j in range(0, len(fvals), 2):
 			x, y = fvals[j: j + 2]
 			fvals[j] = x - min_x
 			fvals[j + 1] = y - min_y
@@ -279,7 +279,7 @@ def _dump_atlas_layout(polys, out_fname, ref_tex=None):
 		ctx.line_to(x1, y1)
 		col = colors[i % len(colors)]
 		ctx.set_source_rgb(*col)
-		for j in xrange(4, len(fvals), 2):
+		for j in range(4, len(fvals), 2):
 			x2, y2 = fvals[j: j + 2]
 			ctx.move_to(x2, y2)
 			ctx.line_to(x0, y0)
@@ -350,7 +350,7 @@ def hex_format(data):
 	size = len(data)
 	bytes_data = struct.unpack("%dB"%size, data)
 	str_list = []
-	for i in xrange(size / 4):
+	for i in range(size / 4):
 		str_list.append("%02x %02x %02x %02x" % tuple(bytes_data[i*4:i*4+4]))
 	return " | ".join(str_list)
 
@@ -359,12 +359,12 @@ class CEmpty(object): pass
 def load_simple_config(f):
 	config = open(f, "r")
 	obj = CEmpty()
-	for k, v in eval(config.read()).iteritems():
+	for k, v in eval(config.read()).items():
 		setattr(obj, k, v)
 	return obj
 
 def iter_path(path):
-	if isinstance(path, basestring):
+	if isinstance(path, str):
 		yield path
 	elif callable(path):
 		for _path in path():
@@ -407,7 +407,7 @@ def export_obj(vb, ib, flip_v=False, outpath="test.obj"):
 	if len(vb[0]) >= 8:
 		for v in vb:
 			lines.append("vn %f %f %f" % (v[5], v[6], v[7]))
-	for i in xrange(len(ib) / 3):
+	for i in range(len(ib) / 3):
 		i1, i2, i3 = ib[i * 3: i * 3 + 3]
 		if len(vb[0]) <= 3:	
 			lines.append("f %d %d %d" % (i1 + 1, i2 + 1, i3 + 1))
@@ -444,12 +444,12 @@ def print_mat4x4(v):
 	mat[1][:] = v[4:8]
 	mat[2][:] = v[8:12]
 	mat[3][:] = v[12:]
-	print(numpy.matrix(mat))
+	print((numpy.matrix(mat)))
 	
 def assert_min_max(_list, _min, _max):
 	assert _min == min(_list)
 	assert _max == max(_list)
 	
 def assert_in_bounding_box(point, _min, _max):
-	for i in xrange(3):
+	for i in range(3):
 		assert _min[i] <= point[i] <= _max[i]

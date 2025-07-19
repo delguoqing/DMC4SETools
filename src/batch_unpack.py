@@ -5,7 +5,7 @@ import arc_unpack
 LANG_SUFFIX = ("_eng.arc", "_fre.arc", "_ger.arc", "_ita.arc", "_jpn.arc", "_spa.arc")
 			
 def batch_unpack(lang="eng"):
-	root = r"H:\GameInsider\GameRes\DMC4SEM8\nativeDX10"
+	root = r"H:\GameInsider\GameRes\DMC4SE\DMC4SEM8\nativeDX10"
 	for top, folders, files in os.walk(root):
 		for fname in files:
 			if fname.endswith(".arc"):
@@ -21,7 +21,7 @@ def batch_unpack(lang="eng"):
 				full_path = os.path.join(top, fname)
 				print("unpacking", full_path)
 				rel_path = os.path.relpath(full_path, root)
-				out_root = r"H:\GameInsider\GameRes\unpacked"
+				out_root = r"H:\GameInsider\GameRes\DMC4SE\unpacked"
 				# out_root = os.path.join(r"E:\dmc4se_data2", rel_path)[:-len(".arc")]
 				arc_unpack.unpack(full_path, out_root)	
 	

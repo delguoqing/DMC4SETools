@@ -102,9 +102,9 @@ def parse(path):
 		
 	# print "high reso scale = %d" % (1 << reso_pow)
 	assert reso_pow == 0, "seems like reserved fields"
-	print "texture dimension = (%d, %d, %d)" % (width, height, depth)
-	print "mipmap level count = %d" % mip_level
-	print "pixel format = %d, bpp = %f" % (pixel_format, PF_CONFIG[pixel_format]["bpp"])
+	print("texture dimension = (%d, %d, %d)" % (width, height, depth))
+	print("mipmap level count = %d" % mip_level)
+	print("pixel format = %d, bpp = %f" % (pixel_format, PF_CONFIG[pixel_format]["bpp"]))
 	# print "texture type = %d" % texture_type
 	# print "unknowns", unkown0, unknown5
 	assert unkown0 == 0 and unknown5 == 0, "seems like reserved fields"
@@ -132,7 +132,7 @@ def parse(path):
 	# sideM_mip0, sideM_mip1, ..., sideM_mipN
 	
 	texel_data_list = []
-	for side_idx in xrange(side_count):
+	for side_idx in range(side_count):
 		offset_idx = side_idx * mip_level
 		start_offset = texture_offsets[offset_idx]
 		if len(texture_offsets) > offset_idx + 1:
@@ -141,8 +141,8 @@ def parse(path):
 			end_offset = getter.size
 		size = end_offset - start_offset
 		pixel_count = width * height * depth
-		print "texture(mip0) offset = 0x%x - 0x%x" % (start_offset, end_offset)
-		print "texture(mip0) size = 0x%x" % size
+		print("texture(mip0) offset = 0x%x - 0x%x" % (start_offset, end_offset))
+		print("texture(mip0) size = 0x%x" % size)
 		assert (pixel_format in PF_CONFIG), \
 				"unknown pixel format = %d, bpp = %f" % (pixel_format,
 														 size / float(pixel_count))
@@ -226,7 +226,7 @@ def _decode_bc1_index_block(data):
 	iv = struct.unpack("4B", data[:4])
 	indices = []
 	for v in iv:
-		for i in xrange(4):
+		for i in range(4):
 			indices.append( (v >> (i * 2)) & 0x3 )
 	return indices
 			
@@ -234,14 +234,14 @@ def save_bc1(data, width, height, fname):
 	pixel_count = width * height
 	ret = [None] * pixel_count
 	x_nblock = width / 4
-	for block_idx in xrange(len(data) / 8):
+	for block_idx in range(len(data) / 8):
 		color_table = _decode_bc1_color_block(data[8 * block_idx: 8 * block_idx + 4])
 		color_indices = _decode_bc1_index_block(data[8 * block_idx + 4: 8 * block_idx + 8])
 		y_start = block_idx / x_nblock
 		x_start = block_idx - x_nblock * y_start
 		x_start *= 4
 		y_start *= 4
-		for i in xrange(16):
+		for i in range(16):
 			y = i / 4
 			x = i - y * 4
 			ret[x_start + x + (y_start + y) * width] = color_table[color_indices[i]]
@@ -256,7 +256,7 @@ def save_bc3(data, width, height, fname):
 	pixel_count = width * height
 	ret = [None] * pixel_count
 	x_nblock = width / 4
-	for block_idx in xrange(len(data) / 16):
+	for block_idx in range(len(data) / 16):
 		a = _bc5_extract_component(data[16 * block_idx: 16 * block_idx + 8])
 		rgb_table = _decode_bc3_color_block(data[16 * block_idx + 8: 16 * block_idx + 12])
 		rgb_indices = _decode_bc1_index_block(data[16 * block_idx + 12: 16 * block_idx + 16])
@@ -264,7 +264,7 @@ def save_bc3(data, width, height, fname):
 		x_start = block_idx - x_nblock * y_start
 		x_start *= 4
 		y_start *= 4
-		for i in xrange(16):
+		for i in range(16):
 			y = i / 4
 			x = i - y * 4
 			rgb = rgb_table[rgb_indices[i]]
@@ -296,12 +296,12 @@ def _bc5_extract_component(d):
 		lut.append(255)
 	ret = []
 	v = 0
-	for i in xrange(2):
+	for i in range(2):
 		base = i * 24
-		for j in xrange(3):
+		for j in range(3):
 			byte_ = ord(d[2 + i * 3 + j])
 			v |= (byte_ << (base + j * 8))
-	for i in xrange(16):
+	for i in range(16):
 		cidx = v & 0b111
 		v >>= 3
 		ret.append(lut[cidx])
@@ -311,7 +311,7 @@ def save_bc5(data, width, height, fname):
 	pixel_count = width * height
 	ret = [None] * pixel_count
 	x_nblock = width / 4
-	for block_idx in xrange(len(data) / 16):
+	for block_idx in range(len(data) / 16):
 		# red component
 		d = data[16 * block_idx: 16 * block_idx + 8]
 		red = _bc5_extract_component(d)
@@ -323,7 +323,7 @@ def save_bc5(data, width, height, fname):
 		x_start = block_idx - x_nblock * y_start
 		x_start *= 4
 		y_start *= 4
-		for i in xrange(16):
+		for i in range(16):
 			y = i / 4
 			x = i - y * 4
 			ret[x_start + x + (y_start + y) * width] = (red[i], green[i])
@@ -338,7 +338,7 @@ def save_bc4(data, width, height, fname):
 	pixel_count = width * height
 	ret = [None] * pixel_count
 	x_nblock = width / 4
-	for block_idx in xrange(len(data) / 8):
+	for block_idx in range(len(data) / 8):
 		# red component
 		d = data[8 * block_idx: 8 * block_idx + 8]
 		red = _bc5_extract_component(d)
@@ -347,7 +347,7 @@ def save_bc4(data, width, height, fname):
 		x_start = block_idx - x_nblock * y_start
 		x_start *= 4
 		y_start *= 4
-		for i in xrange(16):
+		for i in range(16):
 			y = i / 4
 			x = i - y * 4
 			ret[x_start + x + (y_start + y) * width] = (red[i], )
@@ -363,8 +363,8 @@ def test_all(test_count=-1):
 	for top, dirs, files in os.walk(root):
 		for fname in files:
 			if fname.endswith(".tex"):
-				print "-" * 30
-				print "parsing", fname
+				print("-" * 30)
+				print("parsing", fname)
 				# print "fullpath", os.path.join(top, fname)
 				parse(os.path.join(top, fname))
 				if test_count > 0:

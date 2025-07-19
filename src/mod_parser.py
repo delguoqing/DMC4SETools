@@ -104,9 +104,9 @@ class CDpInfo(object):
 	
 	def print_unknowns(self):
 		#print "bb_id:", self.bounding_box_id,
-		print "n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index),
+		print("n1_idx:[%d, %d)" % (self.n1_block_start_index, self.n1_block_end_index), end=' ')
 		#print "cmp_id_", map(hex, self.cmp_id),
-		print "unknowns:", map(hex, self.unknowns)
+		print("unknowns:", list(map(hex, self.unknowns)))
 		
 	def __str__(self):
 		return "vb_offset = 0x%x, fvf_size=0x%x, fvf=0x%x, vertex_num=%d" % (
@@ -161,8 +161,8 @@ class CModel(object):
 		self.bounding_center = header.get("3f", offset=0x40)
 		self.world_scale_factor = header.get("f", offset=0x4c)		# ?
 		self.base_y = self.world_scale_factor #?
-		print "world_scale_factor:", self.world_scale_factor
-		print
+		print("world_scale_factor:", self.world_scale_factor)
+		print()
 		
 		# bounding box
 		self.min_x = header.get("f", offset=0x50)
@@ -177,9 +177,9 @@ class CModel(object):
 		assert reserved_2 == 0
 		self.bounding_box = (self.min_x, self.min_y, self.min_z, \
 							 self.max_x, self.max_y, self.max_z)
-		print "bounding box: (%f, %f, %f) - (%f, %f, %f)" % self.bounding_box
-		print "bounding center:", self.bounding_center
-		print
+		print("bounding box: (%f, %f, %f) - (%f, %f, %f)" % self.bounding_box)
+		print("bounding center:", self.bounding_center)
+		print()
 		# 0x70 ~ 0x80
 		# not used
 		
@@ -202,35 +202,35 @@ class CModel(object):
 		if self.bone_num <= 0:
 			return
 		mod.seek(self.bone_info_offset)
-		print "reading bone data, bone_num = %d" % self.bone_num
-		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x18)
+		print("reading bone data, bone_num = %d" % self.bone_num)
+		print("@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x18))
 		mirror_index = [None] * self.bone_num
 		parent_index = [None] * self.bone_num
 		bone_mat = [None] * self.bone_num
 		bone_offset_mat = [None] * self.bone_num
 		# bone id used for retargeting
 		bone_id = [None] * self.bone_num
-		for bone_index in xrange(self.bone_num):
+		for bone_index in range(self.bone_num):
 			bone_info1 = mod.block(0x18)
 			unk1, parent_joint, mirror_joint, unk2 = bone_info1.get("4B")
-			print "%d: id=%d, parent=%d, sym=%d, unk=%d" % (bone_index, unk1, parent_joint,
-															mirror_joint, unk2)
+			print("%d: id=%d, parent=%d, sym=%d, unk=%d" % (bone_index, unk1, parent_joint,
+															mirror_joint, unk2))
 			# bounding sphere radius for this bone
 			radius = bone_info1.get("f")
 			joint_length = bone_info1.get("f")
 			joint_position = bone_info1.get("3f")
 			calc_joint_length = (joint_position[0] ** 2 + joint_position[1] ** 2 + joint_position[2] ** 2) ** 0.5
 			assert abs(calc_joint_length - joint_length) < 1e-3
-			print "\t", "Position=(%f, %f, %f), Length=%f, Radius=%f" % (
+			print("\t", "Position=(%f, %f, %f), Length=%f, Radius=%f" % (
 				joint_position[0], joint_position[1], joint_position[2], joint_length,
-				radius)
+				radius))
 			
 			parent_index[bone_index] = parent_joint
 			mirror_index[bone_index] = mirror_joint
 			bone_id[bone_index] = unk1
 		
 		root_index = None
-		for bone_index in xrange(self.bone_num):
+		for bone_index in range(self.bone_num):
 			parent = parent_index[bone_index]
 			assert (parent == 0xFF or \
 					(parent != bone_index and 0 <= parent < self.bone_num))
@@ -239,10 +239,10 @@ class CModel(object):
 			if root_index is None and parent == 0xFF:
 				root_index = bone_index
 			
-		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
+		print("@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40))
 		# 0x40 is a typical size for a matrix
 		# bone transformation
-		for bone_index in xrange(self.bone_num):
+		for bone_index in range(self.bone_num):
 			mat = numpy.matrix([
 				list(mod.get("4f")),
 				list(mod.get("4f")),
@@ -250,11 +250,11 @@ class CModel(object):
 				list(mod.get("4f")),
 			])
 			bone_mat[bone_index] = mat
-			print mat
-		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40)
+			print(mat)
+		print("@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + self.bone_num * 0x40))
 		# bone offset matrix:
 		#	model space -> bone space
-		for bone_index in xrange(self.bone_num):
+		for bone_index in range(self.bone_num):
 			mat = numpy.matrix([
 				list(mod.get("4f")),
 				list(mod.get("4f")),
@@ -262,9 +262,9 @@ class CModel(object):
 				list(mod.get("4f")),
 			])
 			bone_offset_mat[bone_index] = mat
-			print mat
-			print
-		print "@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + 0x100)
+			print(mat)
+			print()
+		print("@offset: 0x%x - 0x%x" % (mod.offset, mod.offset + 0x100))
 		# bone_id to bone_inex, meaning that max_bone_num = 256
 		mod.skip(0x100)
 		
@@ -275,8 +275,8 @@ class CModel(object):
 		# Luckily the `normalize matrix` is 'baked' in the `bone offset matrix`.
 		# We can calculate the invert normalize matrix as below
 		self.inv_norm_mat = bone_offset_mat[root_index] * bone_mat[root_index]
-		print "Invert normalize matrix:"
-		print self.inv_norm_mat
+		print("Invert normalize matrix:")
+		print(self.inv_norm_mat)
 		
 		self.bone_mat = bone_mat
 		self.bone_offset_mat = bone_offset_mat
@@ -286,29 +286,29 @@ class CModel(object):
 	# not even read by the game
 	def read_bounding_box(self, mod):
 		mod.seek(self.n2_array_offset)
-		print "bounding box: %d" % self.n2
-		for i in xrange(self.n2):
+		print("bounding box: %d" % self.n2)
+		for i in range(self.n2):
 			vals = mod.get("I7f")
 			self.id_2_bounding_box[vals[0]] = vals
-			print "\t", vals
+			print("\t", vals)
 			
 	def read_material_names(self, mod):
 		mod.seek(self.material_names_offset)
-		print "n = %d, @offset: 0x%x - 0x%x" % (self.material_num, mod.offset,
-												mod.offset + self.material_num * 0x80)
-		for i in xrange(self.material_num):
+		print("n = %d, @offset: 0x%x - 0x%x" % (self.material_num, mod.offset,
+												mod.offset + self.material_num * 0x80))
+		for i in range(self.material_num):
 			material_name = mod.get("128s").rstrip("\x00")
 			self.material_names.append(material_name)
 			
-		print "material names:"
+		print("material names:")
 		for material_name in self.material_names:
-			print "\t", material_name
+			print("\t", material_name)
 			
 	def read_dp(self, mod):
 		mod.seek(self.primitives_offset)
-		print "dp infos:", self.dp_num
+		print("dp infos:", self.dp_num)
 		self.dp_info_list = []
-		for i in xrange(self.dp_num):
+		for i in range(self.dp_num):
 			block = mod.block(0x30)
 			dp_info = CDpInfo(self.cur_n1_block_index)
 			dp_info.read(block)
@@ -320,10 +320,10 @@ class CModel(object):
 		for i, cur_dp_info in enumerate(self.dp_info_list):
 			cur_dp_info.batch_id = batch_id
 			material_name = self.material_names[cur_dp_info.material_index]
-			print "\t[UseMat]:%s" % material_name
-			print "\tBatch:%d" % batch_id,
+			print("\t[UseMat]:%s" % material_name)
+			print("\tBatch:%d" % batch_id, end=' ')
 			cur_dp_info.print_unknowns()
-			print
+			print()
 			if i + 1 >= len(self.dp_info_list):
 				break
 			next_dp_info = self.dp_info_list[i + 1]
@@ -331,12 +331,12 @@ class CModel(object):
 				batch_id += 1			
 			
 	def read_unknown1(self, mod):
-		print "n1 = %d, @offset: 0x%x - 0x%x" % (self.n1, mod.offset,
-												 mod.offset + self.n1 * 0x90)
+		print("n1 = %d, @offset: 0x%x - 0x%x" % (self.n1, mod.offset,
+												 mod.offset + self.n1 * 0x90))
 		self.n1_block_list = []
 		# getter.skip(n1 * 0x90)
-		for i in xrange(self.n1):
-			print mod.get("I7f")
+		for i in range(self.n1):
+			print(mod.get("I7f"))
 			vec1 = mod.get("3f")
 			reserved_0 = mod.get("I")
 			assert reserved_0 == 0
@@ -347,7 +347,7 @@ class CModel(object):
 			#print "max", vec2
 			#print "==========="
 			mat = []
-			for i in xrange(4):
+			for i in range(4):
 				mat.append(mod.get("4f"))
 			#for row in mat:
 			#	print row
@@ -377,8 +377,8 @@ class CModel(object):
 		assert n7 == 0
 		
 	def dump(self, out_path):
-		print "-" * 30
-		print "Parsing Primitives:"
+		print("-" * 30)
+		print("Parsing Primitives:")
 		
 		if out_path.endswith(".dae"):
 			dump_type = DUMP_TYPE_COLLADA
@@ -402,9 +402,8 @@ class CModel(object):
 			}
 			if self.bone_num > 0:
 				gtb["skeleton"] = {}
-				gtb["skeleton"]["name"] = map(lambda v: "Bone%d" % v, range(self.bone_num))
-				gtb["skeleton"]["parent"] = map(lambda v: v == 255 and -1 or v,
-												self.bone_parent)
+				gtb["skeleton"]["name"] = ["Bone%d" % v for v in range(self.bone_num)]
+				gtb["skeleton"]["parent"] = [v == 255 and -1 or v for v in self.bone_parent]
 				mat_list = []
 				for mat in self.bone_mat:
 					mat_list.extend(mat.getA1())
@@ -420,13 +419,13 @@ class CModel(object):
 					mat_list.extend(numpy.identity(4).flatten())
 					gtb["bone_id"].append(255)
 
-		for dp_index in xrange(self.dp_num):
+		for dp_index in range(self.dp_num):
 			dp_info = self.dp_info_list[dp_index]
 
 			vertices = parse_primitives(self, dp_info)
 			indices = self.ib[dp_info.ib_offset: dp_info.ib_offset + dp_info.ib_size]
 			util.assert_min_max(indices, dp_info.index_min, dp_info.index_max)
-			indices = map(lambda v: v - dp_info.index_min, indices)
+			indices = [v - dp_info.index_min for v in indices]
 			assert dp_info.bounding_box_id in self.id_2_bounding_box
 			
 			# mesh for special use, looks like some outline
@@ -479,16 +478,16 @@ def parse(path):
 def print_bounding_box_check(model):
 	if not all((used_x, used_y, used_z)):
 		return
-	print "-" * 30
+	print("-" * 30)
 	calc_min_x = min(used_x)
 	calc_max_x = max(used_x)
 	calc_min_y = min(used_y)
 	calc_max_y = max(used_y)
 	calc_min_z = min(used_z)
 	calc_max_z = max(used_z)	
-	print "X Range [%f, %f]" % (calc_min_x, calc_max_x)
-	print "Y Range [%f, %f]" % (calc_min_y, calc_max_y)
-	print "Z Range [%f, %f]" % (calc_min_z, calc_max_z)
+	print("X Range [%f, %f]" % (calc_min_x, calc_max_x))
+	print("Y Range [%f, %f]" % (calc_min_y, calc_max_y))
+	print("Z Range [%f, %f]" % (calc_min_z, calc_max_z))
 	# A very rough calculation
 	assert abs(calc_min_x - model.min_x) < 1
 	assert abs(calc_min_y - model.min_y) < 1
@@ -501,10 +500,10 @@ used_x = set()
 used_y = set()
 used_z = set()
 def parse_primitives(mod, dp_info):
-	print dp_info
+	print(dp_info)
 	IA_d3d10 = IA_D3D10[str(dp_info.input_layout_index)]
 	IA_game = IA_GAME[dp_info.input_layout_index]
-	print "input_layout_index", dp_info.input_layout_index
+	print("input_layout_index", dp_info.input_layout_index)
 	
 	# Parse
 	vertices = []
@@ -513,7 +512,7 @@ def parse_primitives(mod, dp_info):
 	vertex_format_size = calc_vertex_format_size(IA_d3d10)	
 	getter = util.get_getter(mod.vb, "<")
 	getter.seek(dp_info.vb_offset + vertex_format_size * dp_info.index_min)
-	for i in xrange(dp_info.index_min, dp_info.index_max + 1, 1):
+	for i in range(dp_info.index_min, dp_info.index_max + 1, 1):
 		vertex = parse_vertex(getter, IA_d3d10, IA_game)
 		if mod.bone_num > 0:
 			unnormalize_vertex(vertex, mod.inv_norm_mat)
@@ -622,7 +621,7 @@ def dump_gtb(vertices, indices, mat_name, gtb):
 			msh["uv0"].extend(v["TexCoord"][:2])
 			
 		if has_joint:
-			msh["joints"].extend(map(int, v["Joint"]))
+			msh["joints"].extend(list(map(int, v["Joint"])))
 			weights = v.get("Weight", [])
 			msh["weights"].extend(weights)
 			weight_lack_num = len(v["Joint"]) - len(weights)
@@ -670,7 +669,7 @@ def parse_vertex(getter, IA_d3d10, IA_game):
 			fetch_next = (len(v) < total)
 	
 	global used_joint_ids
-	joint_ids = map(int, vertex.get("Joint", ()))
+	joint_ids = list(map(int, vertex.get("Joint", ())))
 	used_joint_ids.update(joint_ids)
 				
 	return vertex
@@ -719,9 +718,9 @@ def dump_obj_faces(indices, base=0):
 		elem_count += 1
 	face_fmt = "f %s %s %s" % (fmt, fmt, fmt)
 	
-	for i in xrange(0, len(indices), 3):
+	for i in range(0, len(indices), 3):
 		args = []
-		for j in xrange(3):
+		for j in range(3):
 			index = indices[i + j] - base + 1
 			args.extend([index] * elem_count)
 		obj_lines.append(face_fmt % tuple(args))
@@ -730,12 +729,12 @@ def dump_obj_faces(indices, base=0):
 		
 def run_test(root, root2, move_when_error=False):
 	for model_path in glob.glob(os.path.join(root, "*.MOD")):
-		print "parsing:", model_path
+		print("parsing:", model_path)
 		try:
 			parse(model_path)
 			error = False
 		except AssertionError:
-			print >> sys.stderr, "error %s" % model_path
+			print("error %s" % model_path, file=sys.stderr)
 			error = True
 		if error == move_when_error:
 			rel_path = os.path.relpath(model_path, root)
@@ -747,14 +746,14 @@ def run_test(root, root2, move_when_error=False):
 # which can be used to filter a set of valid shaders
 def verify_sematic_order(input_layout_descs):
 	_sig = ""
-	for index, descs in input_layout_descs.iteritems():
+	for index, descs in input_layout_descs.items():
 		sematic_names = []
 		for desc in descs:
 			sematic_names.append(desc["SematicName"])
 		sig = ",".join(sematic_names)
 		if sig.startswith(_sig):
 			_sig = sig
-			print "sig =", _sig
+			print("sig =", _sig)
 		elif _sig.startswith(sig):
 			continue
 		else:
@@ -786,7 +785,7 @@ if __name__ == '__main__':
 			run_test("work_models", "test_models", move_when_error=False)
 		elif sys.argv[1] == "random":
 			rand_path = os.path.join("test_models", random.choice(os.listdir("test_models")))
-			print "mod_parser.py %s > log.txt" % rand_path
+			print("mod_parser.py %s > log.txt" % rand_path)
 			parse(rand_path)
 		else:
 			parse(sys.argv[1])
@@ -796,6 +795,6 @@ if __name__ == '__main__':
 	if used_joint_ids:
 		max_joint_id = max(used_joint_ids)
 		min_joint_id = min(used_joint_ids)
-		print "=" * 30
-		print "Joint Id Range = [%d, %d]" % (min_joint_id, max_joint_id)
+		print("=" * 30)
+		print("Joint Id Range = [%d, %d]" % (min_joint_id, max_joint_id))
 		
