@@ -1,3 +1,4 @@
+import io
 import os
 import struct
 import collections
@@ -48,8 +49,8 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 							size += 1
 						else:
 							size += 2
-					print "src@offset=%s, dst@offset=%s, flags=%s, %s, size=%s" % \
-						(hex(src_offset+12), hex(dst_offset), bin(flags & 0xFF), hex(flags & 0xFF), hex(size))
+					print("src@offset=%s, dst@offset=%s, flags=%s, %s, size=%s" % \
+						(hex(src_offset+12), hex(dst_offset), bin(flags & 0xFF), hex(flags & 0xFF), hex(size)))
 				bit = 0
 				
 			if flags & 1:
@@ -69,8 +70,8 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 					if dst_offset <= N:
 						if (dst_offset < F and (offset >= N - F + dst_offset or offset < N - F)) or \
 							(dst_offset >= F and dst_offset <= offset + F < N - F):
-							print "refing init window src@offset=%s, dst@offset=%s, window@%s, size=%s" % (hex(src_offset), hex(dst_offset), hex(offset), hex(length))
-							print hex(i), hex(j), hex(offset), hex(length)
+							print("refing init window src@offset=%s, dst@offset=%s, window@%s, size=%s" % (hex(src_offset), hex(dst_offset), hex(offset), hex(length)))
+							print(hex(i), hex(j), hex(offset), hex(length))
 							copy_init = True
 					
 				copied = ""
@@ -82,15 +83,15 @@ def decompress_lz01(data, init_text_buf=None, debug=False, N=4096, F=17, THRESHO
 					if debug:
 						copied += chr(c)
 				if debug and copy_init:
-					print "copied: %s" % repr(copied)
+					print("copied: %s" % repr(copied))
 					
 			flags >>= 1
 			bit += 1
 			
-		except IndexError, e:
+		except IndexError as e:
 			if decompressed_size is not None and not (len(dst_buf) == decompressed_size and (flags & ((1 << 8 - bit) - 1)) == 0):
-				print "Decompress exit with unexpected error:"
-				print e
+				print("Decompress exit with unexpected error:")
+				print(e)
 			break
 	
 	return "".join(map(chr, dst_buf))
@@ -104,7 +105,7 @@ class getter(object):
 	def __init__(self, data, endian):
 		self.data = data
 		self.endian = endian
-		self.is_file = isinstance(self.data, file)
+		self.is_file = isinstance(self.data, io.TextIOBase) or isinstance(self.data, io.BufferedIOBase)
 		if self.is_file:
 			self.offset = self.data.tell()
 			self.data.seek(0, 2)
@@ -379,7 +380,7 @@ def beep_error():
 	winsound.Beep(Freq,Dur)
 
 def beep_finish():
-	print "\a"
+	print("\a")
 	
 def dump_bin(bin_data, file_path, mkdir=False):
 	if mkdir:
@@ -443,7 +444,7 @@ def print_mat4x4(v):
 	mat[1][:] = v[4:8]
 	mat[2][:] = v[8:12]
 	mat[3][:] = v[12:]
-	print numpy.matrix(mat)
+	print(numpy.matrix(mat))
 	
 def assert_min_max(_list, _min, _max):
 	assert _min == min(_list)

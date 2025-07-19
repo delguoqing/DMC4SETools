@@ -4,7 +4,7 @@ import util
 import zlib
 import json
 
-FOURCC = "ARC\x00"
+FOURCC = b"ARC\x00"
 VERSION = 0x7
 ENDIAN = "<"
 
@@ -90,10 +90,14 @@ def unpack(fpath, out_root=".", dry_run=False):
 	arc_prefix = os.path.splitext(os.path.split(fpath)[1])[0]
 	# filelist
 	filelist = []
-	for file_idx in xrange(filecnt):
+	for file_idx in range(filecnt):
 		offset = getter.offset
-		file_path = get("64s").rstrip("\x00")
-		assert "\x00" not in file_path
+		file_path_bytes = get("64s")
+		null_terminator_index = file_path_bytes.index(b'\x00')
+		if null_terminator_index == -1:
+			file_path = file_path_bytes.decode("utf-8")
+		else:
+			file_path = file_path_bytes[:null_terminator_index].decode("utf-8")
 		unk1, comp_size, unk2, offset = get("4I")
 		filelist.append((file_path, offset, comp_size, unk1, unk2))
 	
@@ -107,21 +111,21 @@ def unpack(fpath, out_root=".", dry_run=False):
 		if not ext:
 			if class_name:
 				ext = class_name
-			elif data_decomp.startswith("<?xml"):
+			elif data_decomp.startswith(b"<?xml"):
 				ext = "xml"
-			elif data_decomp.startswith("MOT"):
+			elif data_decomp.startswith(b"MOT"):
 				ext = "mot"
 
 		outpath = file_path		
 		final_outpath = outpath + "." + ext
-		print hex(offset), final_outpath
+		print(hex(offset), final_outpath)
 		
 		final_outpath = os.path.join(out_root, final_outpath)
 		# sometimes, the same file from different arc file will collide
 		# mostly in gui localization. It doesn't matter too much for me though.
 		need_write = True
 		while os.path.exists(final_outpath):
-			print final_outpath
+			print(final_outpath)
 			f_old = open(final_outpath, "rb")
 			data_old = f_old.read()
 			f_old.close()
@@ -136,7 +140,7 @@ def unpack(fpath, out_root=".", dry_run=False):
 			try:
 				util.dump_bin(data_decomp, final_outpath, mkdir=True)
 			except IOError as e:
-				print "hex_format", hex(class_hash)
+				print("hex_format", hex(class_hash))
 				util.dump_bin(data_decomp, outpath + "_debug", mkdir=True)
 				raise
 	
